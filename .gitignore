@@ -1,0 +1,36 @@
+# Fichiers Python compilés
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Cache Pytest
+.pytest_cache/
+
+# Environnements virtuels
+env/
+venv/
+.venv/
+
+# Docker
+.dockerignore
+
+# Jetons d'authentification ou fichiers sensibles (juste au cas)
+*.env
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# Fichiers de log
+*.log
+
+# Fichier système
+.DS_Store
+
+# GitHub workflows si temporaires (à adapter selon ton usage)
+# .github/workflows/*.yml (ne PAS ignorer si tu veux versionner ta pipeline)
+
+# README ou outputs générés (ex: screenshots)
+*.png
+*.jpg
