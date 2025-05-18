@@ -35,8 +35,8 @@ Elle est testée à l’aide de `pytest` et conforme au style `black`.
 ### 1. Cloner le dépôt
 
 ```bash
-git clone https://github.com/votre-utilisateur/log430-lab0.git
-cd log430-lab0
+git clone https://github.com/EnissayG/laboratoire-0-log430-YassineGraitaa.git
+cd laboratoire-0-log430-YassineGraitaa/
 ```
 
 ### 2. Lancer localement avec Docker
