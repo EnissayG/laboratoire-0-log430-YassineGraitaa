@@ -79,7 +79,8 @@ Elle s’exécute automatiquement à chaque `push` ou `pull request` sur la bran
 ---
 
 ## 📸 Capture d’écran de la CI/CD
-Insez la capture d'ecrean 
+![image](https://github.com/user-attachments/assets/16891401-da74-424a-8a76-c24cec3816f4)
+
 ---
 
 ## 🧼 Bonnes pratiques appliquées
