@@ -12,6 +12,11 @@ env/
 venv/
 .venv/
 
+
+# Base de données locale
+*.db
+/data/
+
 # Docker
 .dockerignore
 
