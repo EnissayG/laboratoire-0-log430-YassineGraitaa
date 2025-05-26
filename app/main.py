@@ -2,6 +2,7 @@ from app.db import init_db
 from app.services.produit_service import rechercher_produit, afficher_tout_le_stock
 from app.services.vente_service import enregistrer_vente, annuler_vente
 
+
 def afficher_menu():
     while True:
         print("\n=== MENU PRINCIPAL ===")
@@ -32,12 +33,16 @@ def afficher_menu():
                 if not quantite.isdigit():
                     print("⚠️ Quantité invalide.")
                     continue
-                panier.append({"produit_id": int(produit_id), "quantite": int(quantite)})
+                panier.append(
+                    {"produit_id": int(produit_id), "quantite": int(quantite)}
+                )
 
             if panier:
                 vente = enregistrer_vente(panier)
                 if vente:
-                    print(f"✅ Vente enregistrée (total : {vente.total:.2f}$) — ID: {vente.id}")
+                    print(
+                        f"✅ Vente enregistrée (total : {vente.total:.2f}$) — ID: {vente.id}"
+                    )
                 else:
                     print("❌ Erreur lors de la vente.")
             else:
@@ -66,9 +71,11 @@ def afficher_menu():
         else:
             print("❌ Choix invalide.")
 
+
 def main():
     init_db()
     afficher_menu()
+
 
 if __name__ == "__main__":
     main()

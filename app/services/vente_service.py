@@ -53,9 +53,7 @@ def enregistrer_vente(produits_selectionnes: list[dict]) -> Vente | None:
             total += sous_total
 
             ligne = LigneVente(
-                produit_id=produit.id,
-                quantite=quantite,
-                sous_total=sous_total
+                produit_id=produit.id, quantite=quantite, sous_total=sous_total
             )
             lignes.append(ligne)
             produit.quantite_stock -= quantite

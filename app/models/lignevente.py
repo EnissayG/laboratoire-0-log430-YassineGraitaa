@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db import Base
 
+
 class LigneVente(Base):
     __tablename__ = "lignes_vente"
 

@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.db import Base
 
+
 class Vente(Base):
     __tablename__ = "ventes"
 
@@ -10,7 +11,9 @@ class Vente(Base):
     date = Column(DateTime, default=datetime.utcnow)
     total = Column(Float, nullable=False)
 
-    lignes = relationship("LigneVente", back_populates="vente", cascade="all, delete-orphan")
+    lignes = relationship(
+        "LigneVente", back_populates="vente", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<Vente(id={self.id}, date={self.date}, total={self.total})>"

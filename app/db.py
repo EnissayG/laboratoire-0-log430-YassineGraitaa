@@ -18,6 +18,8 @@ SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 session = SessionLocal()
 
+
 def init_db():
     from app.models import produit, vente  # Ajoute d'autres modèles si nécessaire
+
     Base.metadata.create_all(bind=engine)

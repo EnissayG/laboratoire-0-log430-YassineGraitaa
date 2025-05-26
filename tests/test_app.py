@@ -6,6 +6,7 @@ from app.services.vente_service import enregistrer_vente, annuler_vente
 
 produit_test_id = None
 
+
 @pytest.fixture(scope="module", autouse=True)
 def setup():
     global produit_test_id
@@ -28,10 +29,12 @@ def setup():
     session.query(Produit).delete()
     session.commit()
 
+
 def test_recherche_produit():
     result = rechercher_produit("banane")
     assert len(result) == 1
     assert result[0].nom.lower() == "banane"
+
 
 def test_enregistrer_vente():
     global produit_test_id
@@ -43,9 +46,11 @@ def test_enregistrer_vente():
     produit = session.get(Produit, produit_test_id)
     assert produit.quantite_stock == 8  # 10 - 2
 
+
 def test_afficher_tout_le_stock():
     stock = afficher_tout_le_stock()
     assert any(p.nom.lower() == "banane" for p in stock)
+
 
 def test_annuler_vente():
     global produit_test_id
@@ -69,4 +74,3 @@ def test_annuler_vente():
     session.expire_all()
     produit = session.get(Produit, produit_test_id)
     assert produit.quantite_stock == 10  # Maintenant oui ✅
-
