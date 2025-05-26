@@ -1,0 +1,26 @@
+@startuml
+title Diagramme de séquence – Retour de vente
+
+actor Employe as Utilisateur
+participant "ConsoleUI:Main" as UI
+participant "VenteService" as Service
+participant "ORM:SQLAlchemy" as ORM
+database "BDD (PostgreSQL)" as BDD
+
+Utilisateur -> UI : annulerVente(id_vente: int)
+activate UI
+UI -> Service : annulerVente(id_vente: int): bool
+activate Service
+Service -> ORM : find(Vente).delete()
+activate ORM
+ORM -> BDD : DELETE FROM ventes WHERE id = id_vente
+BDD --> ORM : OK
+ORM -> BDD : UPDATE produits SET stock += ... 
+BDD --> ORM : OK
+deactivate ORM
+Service --> UI : true
+deactivate Service
+UI --> Utilisateur : afficherConfirmation()
+deactivate UI
+
+@enduml

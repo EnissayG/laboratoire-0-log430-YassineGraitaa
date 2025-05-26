@@ -1,0 +1,18 @@
+@startuml
+title Vue des cas d'utilisation – Système de caisse
+
+actor Employe
+
+rectangle "Application Console" {
+  usecase "Rechercher un produit" as UC1
+  usecase "Enregistrer une vente" as UC2
+  usecase "Annuler une vente (retour)" as UC3
+  usecase "Consulter le stock" as UC4
+}
+
+Employe --> UC1
+Employe --> UC2
+Employe --> UC3
+Employe --> UC4
+
+@enduml

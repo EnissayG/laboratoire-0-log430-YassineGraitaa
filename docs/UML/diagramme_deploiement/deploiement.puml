@@ -1,0 +1,21 @@
+@startuml
+title Vue de déploiement – Architecture 2-tier
+
+node "Machine Virtuelle (VM)" {
+  
+  node "Docker Container : Application" {
+    component "Console App (main.py)" 
+    component "Services (services.py)"
+    component "Models (models/)"
+  }
+
+  node "Docker Container : Base de données" {
+    database "SQLite DB"
+  }
+
+}
+
+' Connexion directe via ORM
+"Console App (main.py)" --> "SQLite DB" : accès direct via ORM
+
+@enduml

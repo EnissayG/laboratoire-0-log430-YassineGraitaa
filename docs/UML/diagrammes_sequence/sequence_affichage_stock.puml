@@ -1,0 +1,24 @@
+@startuml
+title Diagramme de séquence – Affichage du stock
+
+actor Employe as Utilisateur
+participant "ConsoleUI:Main" as UI
+participant "ProduitService" as Service
+participant "ORM:SQLAlchemy" as ORM
+database "BDD (PostgreSQL)" as BDD
+
+Utilisateur -> UI : afficherStock()
+activate UI
+UI -> Service : afficherStock(): List<Produit>
+activate Service
+Service -> ORM : query(Produit).all()
+activate ORM
+ORM -> BDD : SELECT * FROM produits
+BDD --> ORM : résultats (List<Produit>)
+deactivate ORM
+Service --> UI : List<Produit>
+deactivate Service
+UI --> Utilisateur : afficherListeProduits()
+deactivate UI
+
+@enduml

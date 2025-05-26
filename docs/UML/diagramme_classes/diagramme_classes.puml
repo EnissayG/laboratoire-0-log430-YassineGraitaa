@@ -1,0 +1,34 @@
+@startuml
+title Vue Logique – Diagramme de classes
+
+class Produit {
+  - id: int
+  - nom: str
+  - categorie: str
+  - prix: float
+  - quantite_stock: int
+}
+
+class Vente {
+  - id: int
+  - date: datetime
+  - total: float
+}
+
+class LigneVente {
+  - id: int
+  - quantite: int
+  - sous_total: float
+}
+
+class Utilisateur {
+  - id: int
+  - nom: str
+  - role: str
+}
+
+Produit "1" <-- "0..*" LigneVente : contient >
+Vente "1" <-- "1..*" LigneVente : composée de >
+Vente "*" --> "1" Utilisateur : effectuée par >
+
+@enduml

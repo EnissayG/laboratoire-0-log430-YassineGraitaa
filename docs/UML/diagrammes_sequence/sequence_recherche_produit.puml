@@ -1,0 +1,24 @@
+@startuml
+title Diagramme de séquence – Recherche de produit
+
+actor Employe as Utilisateur
+participant "ConsoleUI:Main" as UI
+participant "ProduitService" as Service
+participant "ORM:SQLAlchemy" as ORM
+database "BDD (PostgreSQL)" as BDD
+
+Utilisateur -> UI : rechercherProduit(critere: str)
+activate UI
+UI -> Service : rechercherProduit(critere: str): List<Produit>
+activate Service
+Service -> ORM : query(Produit).filter_by(critere)
+activate ORM
+ORM -> BDD : SELECT * FROM produits WHERE ...
+BDD --> ORM : résultats (List<Produit>)
+deactivate ORM
+Service --> UI : List<Produit>
+deactivate Service
+UI --> Utilisateur : afficherRésultats()
+deactivate UI
+
+@enduml

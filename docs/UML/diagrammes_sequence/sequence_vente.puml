@@ -1,0 +1,33 @@
+@startuml
+title Diagramme de séquence – enregistrer une vente (détaillé)
+
+actor Employe as Utilisateur
+participant "ConsoleUI:Main" as UI
+participant "VenteService" as Service
+participant "Vente" as Vente
+participant "ORM:SQLAlchemy" as ORM
+database "BDD (PostgreSQL)" as BDD
+
+Utilisateur -> UI : enregistrerVente(produits: List<Produit>)
+activate UI
+UI -> Service : enregistrerVente(produits: List<Produit>): bool
+activate Service
+Service -> Vente : create(produits: List<Produit>)
+activate Vente
+Vente -> ORM : save(vente: Vente)
+activate ORM
+ORM -> BDD : INSERT INTO ventes + lignes
+activate BDD
+BDD --> ORM : OK
+deactivate BDD
+deactivate ORM
+Vente --> Service : vente enregistrée
+deactivate Vente
+deactivate Service
+Service --> UI : true
+UI --> Utilisateur : afficherConfirmation()
+deactivate UI
+
+
+
+@enduml

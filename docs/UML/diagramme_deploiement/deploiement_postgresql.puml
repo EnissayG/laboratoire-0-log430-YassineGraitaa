@@ -1,0 +1,21 @@
+@startuml
+title Vue de déploiement – Architecture 2-tier (PostgreSQL)
+
+node "Machine Virtuelle (VM)" {
+
+  node "Docker Container : Application" {
+    component "Console App (main.py)" 
+    component "Services (services.py)"
+    component "Models (models/)"
+  }
+
+  node "Docker Container : Base de données" {
+    database "PostgreSQL DB"
+    note bottom of "PostgreSQL DB" : Conteneur séparé via Docker Compose
+  }
+
+}
+
+"Models (models/)" --> "PostgreSQL DB" : Connexion via SQLAlchemy (PostgreSQL)
+
+@enduml

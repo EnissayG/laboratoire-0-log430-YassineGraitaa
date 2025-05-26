@@ -1,0 +1,31 @@
+@startuml
+title Vue d'implémentation – Organisation des modules (PostgreSQL)
+
+package "Présentation" {
+  class Main
+  note right of Main : Interface console
+}
+
+package "Logique métier" {
+  class ProduitService
+  class VenteService
+  note right of ProduitService : Règles métier
+}
+
+package "Persistance" {
+  class Produit
+  class Vente
+  class LigneVente
+  class DB
+  note right of DB : Connexion à PostgreSQL via SQLAlchemy
+}
+
+Main --> ProduitService : utiliser
+Main --> VenteService : utiliser
+ProduitService --> Produit : manipuler
+VenteService --> Vente : manipuler
+VenteService --> LigneVente : créer
+ProduitService --> DB : requêtes stock
+VenteService --> DB : requêtes ventes
+
+@enduml
