@@ -9,6 +9,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: magasin
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_HOST: localhost  # très important pour que ta connexion fonctionne
+
     steps:
     - name: 📥 Cloner le code
       uses: actions/checkout@v3
@@ -21,6 +39,7 @@ jobs:
     - name: 📦 Installer les dépendances
       run: |
         pip install -r requirements.txt
+        pip install black pytest
 
     - name: ✅ Lint (black)
       run: black --check .
