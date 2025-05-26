@@ -20,7 +20,7 @@ jobs:
 
     - name: 📦 Installer les dépendances
       run: |
-        pip install pytest black
+        pip install -r requirements.txt
 
     - name: ✅ Lint (black)
       run: black --check .
@@ -32,7 +32,7 @@ jobs:
       run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
     - name: 🔨 Build de l’image Docker
-      run: docker build -t docker.io/${{ secrets.DOCKER_USERNAME }}/log430-hello:latest .
+      run: docker build -t docker.io/${{ secrets.DOCKER_USERNAME }}/log430-app:latest .
 
     - name: 🚀 Push de l’image sur Docker Hub
-      run: docker push docker.io/${{ secrets.DOCKER_USERNAME }}/log430-hello:latest
+      run: docker push docker.io/${{ secrets.DOCKER_USERNAME }}/log430-app:latest

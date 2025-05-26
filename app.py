@@ -1,6 +1,4 @@
-def greet(name):
-    print(f"Hello, {name}!")
-
+from app.main import main
 
 if __name__ == "__main__":
-    print(greet("Yassine"))
+    main()
