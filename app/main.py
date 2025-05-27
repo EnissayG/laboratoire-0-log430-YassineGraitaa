@@ -33,9 +33,9 @@ def afficher_menu():
                 print("❌ Prix ou quantité invalide.")
             else:
                 from app.services.produit_service import ajouter_produit
+
                 produit = ajouter_produit(nom, categorie, float(prix), int(stock))
                 print(f"✅ Produit ajouté : {produit}")
-
 
         elif choix == "2":
             panier = []

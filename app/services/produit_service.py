@@ -6,8 +6,11 @@ from sqlalchemy import or_
 def afficher_tout_le_stock():
     return session.query(Produit).all()
 
+
 def ajouter_produit(nom, categorie, prix, quantite_stock):
-    produit = Produit(nom=nom, categorie=categorie, prix=prix, quantite_stock=quantite_stock)
+    produit = Produit(
+        nom=nom, categorie=categorie, prix=prix, quantite_stock=quantite_stock
+    )
     session.add(produit)
     session.commit()
     return produit
