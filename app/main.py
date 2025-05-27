@@ -6,6 +6,7 @@ from app.services.vente_service import enregistrer_vente, annuler_vente
 def afficher_menu():
     while True:
         print("\n=== MENU PRINCIPAL ===")
+        print("0. Ajouter un produit")
         print("1. Rechercher un produit")
         print("2. Enregistrer une vente")
         print("3. Consulter le stock")
@@ -22,6 +23,19 @@ def afficher_menu():
             else:
                 for p in produits:
                     print(p)
+        elif choix == "0":
+            nom = input("Nom du produit : ")
+            categorie = input("Catégorie : ")
+            prix = input("Prix : ")
+            stock = input("Quantité en stock : ")
+
+            if not prix.replace(".", "").isdigit() or not stock.isdigit():
+                print("❌ Prix ou quantité invalide.")
+            else:
+                from app.services.produit_service import ajouter_produit
+                produit = ajouter_produit(nom, categorie, float(prix), int(stock))
+                print(f"✅ Produit ajouté : {produit}")
+
 
         elif choix == "2":
             panier = []
