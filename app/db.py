@@ -20,6 +20,18 @@ session = SessionLocal()
 
 
 def init_db():
-    from app.models import produit, vente  # Ajoute d'autres modèles si nécessaire
+    from app.models import (
+        produit,
+        vente,
+        DemandeApprovisionnement,
+    )  # Ajoute d'autres modèles si nécessaire
 
     Base.metadata.create_all(bind=engine)
+
+
+def get_session():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

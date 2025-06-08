@@ -1,17 +1,16 @@
-# Utilise une image Python légère
+# Dockerfile
+
 FROM python:3.11-slim
 
-# Dépendances système pour PostgreSQL
-RUN apt-get update && apt-get install -y gcc libpq-dev
-
-# Répertoire de travail dans le conteneur
+# Set work directory
 WORKDIR /app
 
-# Copie les fichiers du projet dans le conteneur
+# Copy requirements and install
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the app code
 COPY . .
 
-# Installe les dépendances Python
-RUN pip install -r requirements.txt
-
-# Point d'entrée : exécute ton application console
-CMD ["python", "app.py"]
+# Lancer FastAPI avec Uvicorn
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

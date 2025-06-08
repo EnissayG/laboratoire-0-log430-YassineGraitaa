@@ -1,22 +1,28 @@
-# LOG430 – Laboratoire 1 : Système de caisse console (2-tier)
+# LOG430 – Laboratoire 1 & 2 : Système de caisse (3-tier + dashboard)
 
 ## 🧩 Description du projet
 
-Ce projet est une application **console Python conteneurisée**, développée dans le cadre du Laboratoire 1 du cours **LOG430 – Architecture Logicielle (Été 2025)**.  
-Elle met en œuvre une architecture 2-tiers pour un système de caisse local, avec une base de données PostgreSQL et une application cliente en console.
+Ce projet évolue d’une application **console conteneurisée (Lab 1)** vers une **application distribuée (Lab 2)** avec API REST (FastAPI) et dashboard web (React).
+
+Il est développé dans le cadre des laboratoires du cours **LOG430 – Architecture Logicielle (Été 2025)**.
 
 ---
 
 ## ⚙️ Fonctionnalités de l'application
 
+### Lab 1 (2-tier, console)
 - 🔍 Rechercher un produit (ID, nom ou catégorie)
 - 🛒 Enregistrer une vente (multi-produits)
 - ➕ Ajouter un produit
 - 🔁 Annuler une vente
 - 📦 Consulter l’état du stock
-- 🧪 Tests automatisés avec `pytest`
-- 🐳 Docker + `docker-compose`
-- 🔁 Pipeline CI/CD (GitHub Actions + Docker Hub)
+
+### Lab 2 (3-tier, web API + React)
+- 🌐 API REST avec FastAPI (produits, ventes, réapprovisionnement)
+- 🗂️ Gestion des demandes de stock
+- 📊 Dashboard visuel avec React : ventes, ruptures, surstock
+- 🧾 Génération de rapport de ventes (UC1)
+- ✅ Couverture UC1 à UC6, UC8 (option B)
 
 ---
 
@@ -24,18 +30,16 @@ Elle met en œuvre une architecture 2-tiers pour un système de caisse local, av
 
 ```
 /
-├── app/                          # Application principale
-│   ├── models/                   # Modèles ORM (Produit, Vente, LigneVente)
-│   ├── services/                 # Logique métier (vente, produit)
-│   ├── db.py                     # Connexion PostgreSQL
-│   └── main.py                   # Menu console
-├── app.py                        # Point d’entrée global
-├── tests/test_app.py             # Tests unitaires
-├── Dockerfile                    # Image Docker
-├── docker-compose.yml            # App + PostgreSQL
-├── requirements.txt              # Dépendances
-├── .github/workflows/ci.yml      # Pipeline GitHub Actions
-├── .dockerignore / .gitignore    # Fichiers exclus
+├── app/                          # Backend Python (FastAPI)
+│   ├── models/                   # Modèles ORM
+│   ├── routers/                  # Routes API REST
+│   ├── services/                 # Logique métier
+│   ├── db.py / main.py / schemas.py
+├── tests/                        # Tests Pytest
+├── frontend/dashboard/          # Interface React (UC3/UC8)
+├── docker-compose.yml / Dockerfile
+├── requirements.txt             # Dépendances backend
+├── .github/workflows/ci.yml     # Pipeline CI/CD
 └── README.md
 ```
 
@@ -52,78 +56,64 @@ cd laboratoire-0-log430-YassineGraitaa/
 
 ---
 
-### 2. Lancer l'application (en mode interactif avec Docker Compose)
-
-⚠️ Pour exécuter l’application console avec `input()`, il faut un terminal interactif :
-
-```bash
-docker-compose run --rm app
-```
-
-📌 Cela démarre :
-- Le conteneur PostgreSQL
-- Le conteneur de l'application console
-- Et te permet d'interagir avec le menu
-
----
-
-### 3. Ou lancer le tout (sans interaction)
+### 2. Lancer toute l’architecture (FastAPI + PostgreSQL + dashboard React)
 
 ```bash
 docker-compose up --build
 ```
 
-🔸 Utile pour vérifier que le conteneur démarre bien, mais `input()` plantera sans terminal interactif.
+- 🔹 Accès API : http://localhost:8000/docs
+- 🔹 Accès dashboard : http://localhost:3000
 
 ---
 
-### 4. Utiliser Docker seul (si tu n’utilises pas Compose)
+### 3. Exécuter les tests
 
 ```bash
-docker build -t log430-app .
-docker run --rm -it log430-app
-```
+# En local
+python -m pytest
 
-✅ N’oublie le flag `-it` pour rendre le terminal interactif
-
----
-
-## ✅ Exécution des tests
-
-### 1. Dans Docker (recommandé)
-
-```bash
+# Ou via Docker Compose
 docker-compose run --rm app pytest
 ```
 
 ---
 
-## 🔁 CI/CD
+### 4. Formater le code Python avec Black
 
-Une pipeline CI/CD est définie dans `.github/workflows/ci.yml`.  
-Elle s’exécute automatiquement à chaque `push` ou `pull_request` sur `main`.
+```bash
+python -m black .
+```
+
+> Le style est automatiquement vérifié dans la CI avec `black --check .`
+
+---
+
+## 🔁 CI/CD (GitHub Actions)
+
+Déclenchée à chaque `push` sur `main`.
 
 Étapes automatisées :
-1. **Lint** avec `black --check .`
-2. **Tests** unitaires avec `pytest`
-3. **Build** de l’image Docker
-4. **Push** sur Docker Hub :  
-   `docker.io/<votre_nom_docker>/log430-app:latest`
+1. ✅ **Lint** avec `black`
+2. ✅ **Tests** via `pytest`
+3. ✅ **Build Docker** image backend
+4. ✅ **Push Docker Hub** : `docker.io/<votre_nom>/log430-app`
 
 ---
 
 ## 🧼 Bonnes pratiques appliquées
 
-- Architecture 2-tier avec couche ORM
-- Conteneurisation Docker + orchestration PostgreSQL
-- CI/CD complet avec GitHub Actions
-- Code structuré et modulaire
-- Tests unitaires automatisés
-- Style de code unifié avec `black`
+- Architecture 3-tier : base de données, API, frontend React
+- Découplage total (routes, services, modèles)
+- ORM SQLAlchemy + Pydantic (v2)
+- Dashboard React avec Recharts pour UC3 + UC8
+- Tests unitaires + CI avec GitHub Actions
+- Lint automatique avec `black`
+- Déploiement conteneurisé (Docker Compose)
 
 ---
 
 ## 📄 Licence
 
-Projet académique réalisé dans le cadre du cours LOG430 à l’ÉTS (Été 2025).  
-Développé par Yassine Graitaa.
+Projet académique – cours LOG430 (Architecture Logicielle) à l’ÉTS – Été 2025.  
+Développé par **Yassine Graitaa**.
