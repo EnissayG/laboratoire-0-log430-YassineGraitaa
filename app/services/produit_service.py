@@ -14,6 +14,7 @@ def ajouter_produit(nom, categorie, prix, quantite_stock, session):
     )
     session.add(produit)
     session.commit()
+    session.refresh(produit)  # <== pour recharger les données (ex: id généré)
     return produit
 
 

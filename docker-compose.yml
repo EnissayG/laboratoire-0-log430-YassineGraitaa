@@ -32,5 +32,18 @@ services:
     working_dir: /app
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
+  frontend:
+    build:
+      context: ./frontend/dashboard
+    container_name: log430-frontend
+    ports:
+      - "3000:3000"
+    working_dir: /app
+    command: ["npm", "start"]
+    volumes:
+      - ./frontend/dashboard:/app
+    depends_on:
+      - api
+
 volumes:
   postgres-data:

@@ -7,13 +7,16 @@ from datetime import datetime
 # ========================
 
 
+from pydantic import BaseModel
+
+
 class ProduitOut(BaseModel):
     id: int
     nom: str
     prix: float
 
     class Config:
-        from_attributes = True
+        orm_mode = True  # Très important pour que FastAPI comprenne l’objet SQLAlchemy
 
 
 class ProduitUpdate(BaseModel):

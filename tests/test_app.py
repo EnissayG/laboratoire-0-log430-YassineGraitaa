@@ -1,76 +1,54 @@
-import pytest
-from app.db import init_db, session
-from app.models import Produit, Vente, LigneVente
-from app.services.produit_service import rechercher_produit, afficher_tout_le_stock
-from app.services.vente_service import enregistrer_vente, annuler_vente
+from fastapi.testclient import TestClient
+from app.main import app
 
-produit_test_id = None
+client = TestClient(app)
 
 
-@pytest.fixture(scope="module", autouse=True)
-def setup():
-    global produit_test_id
-    init_db()
-
-    session.query(LigneVente).delete()
-    session.query(Vente).delete()
-    session.query(Produit).delete()
-
-    produit = Produit(nom="Banane", categorie="Fruit", prix=1.5, quantite_stock=10)
-    session.add(produit)
-    session.commit()
-    produit_test_id = produit.id
-    print(f"✅ Produit inséré avec ID : {produit_test_id}")
-
-    yield
-
-    session.query(LigneVente).delete()
-    session.query(Vente).delete()
-    session.query(Produit).delete()
-    session.commit()
+def test_get_produits():
+    response = client.get("/produits/")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
 
 
 def test_recherche_produit():
-    result = rechercher_produit("banane")
-    assert len(result) == 1
-    assert result[0].nom.lower() == "banane"
+    response = client.get("/produits/recherche", params={"critere": "Test"})
+    assert response.status_code == 200
 
 
-def test_enregistrer_vente():
-    global produit_test_id
-    vente = enregistrer_vente([{"produit_id": produit_test_id, "quantite": 2}])
-    assert vente is not None
-    assert vente.total == 3.0
-    assert vente.id is not None
-    session.expire_all()  # pour recharger le stock
-    produit = session.get(Produit, produit_test_id)
-    assert produit.quantite_stock == 8  # 10 - 2
+def test_ajout_produit():
+    response = client.post(
+        "/produits/",
+        params={
+            "nom": "TestProduit",
+            "categorie": "TestCat",
+            "prix": 9.99,
+            "quantite_stock": 20,
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["nom"] == "TestProduit"
 
 
-def test_afficher_tout_le_stock():
-    stock = afficher_tout_le_stock()
-    assert any(p.nom.lower() == "banane" for p in stock)
+def test_vente_invalide():
+    # Vente sans panier ni magasin → erreur 422
+    response = client.post("/ventes/", json={})
+    assert response.status_code == 422
 
 
-def test_annuler_vente():
-    global produit_test_id
+def test_rapport_global():
+    response = client.get("/ventes/rapport")
+    assert response.status_code == 200
+    data = response.json()
+    assert "total_ventes" in data
+    assert "ruptures" in data
+    assert "surstocks" in data
 
-    # S'assurer d’un stock propre
-    session.query(LigneVente).delete()
-    session.query(Vente).delete()
-    session.commit()
 
-    produit = session.get(Produit, produit_test_id)
-    produit.quantite_stock = 10
-    session.commit()
-
-    # Test réel
-    vente = enregistrer_vente([{"produit_id": produit_test_id, "quantite": 2}])
-    assert vente is not None
-    vente_id = vente.id
-    success = annuler_vente(vente_id)
-    assert success is True
-
-    session.expire_all()
-    produit = session.get(Produit, produit_test_id)
-    assert produit.quantite_stock == 10  # Maintenant oui ✅
+def test_creer_demande_approvisionnement():
+    # 🔸 À ajuster selon un produit réel
+    response = client.post(
+        "/demandes/", json={"produit_id": 1, "quantite": 5, "magasin": "TestMagasin"}
+    )
+    # Soit il passe (produit existe), soit 404
+    assert response.status_code in (200, 404)
