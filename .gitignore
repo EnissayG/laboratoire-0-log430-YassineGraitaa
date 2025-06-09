@@ -1,4 +1,6 @@
-# Fichiers Python compilés
+# ========================
+# Python
+# ========================
 __pycache__/
 *.pyc
 *.pyo
@@ -7,35 +9,52 @@ __pycache__/
 # Cache Pytest
 .pytest_cache/
 
-# Environnements virtuels
+# Virtual envs
 env/
 venv/
 .venv/
-
 
 # Base de données locale
 *.db
 /data/
 
+# ========================
 # Docker
+# ========================
 .dockerignore
 
-# Jetons d'authentification ou fichiers sensibles (juste au cas)
+# ========================
+# Secrets / Env
+# ========================
 *.env
 
-# VSCode / IDE
+# ========================
+# IDE / Éditeurs
+# ========================
 .vscode/
 .idea/
 
-# Fichiers de log
+# ========================
+# Logs
+# ========================
 *.log
 
-# Fichier système
+# ========================
+# Système
+# ========================
 .DS_Store
 
-# GitHub workflows si temporaires (à adapter selon ton usage)
-# .github/workflows/*.yml (ne PAS ignorer si tu veux versionner ta pipeline)
+# ========================
+# Node / React (frontend)
+# ========================
+frontend/dashboard/node_modules/
+frontend/dashboard/build/
+frontend/dashboard/dist/
 
-# README ou outputs générés (ex: screenshots)
+# ========================
+# Médias & Générés
+# ========================
 *.png
 *.jpg
+*.jpeg
+*.svg

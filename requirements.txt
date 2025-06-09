@@ -1,6 +1,7 @@
-sqlalchemy
-psycopg2-binary
-black
-pytest
 fastapi
 uvicorn
+sqlalchemy
+psycopg2-binary
+httpx          # ✅ Ajoute ceci
+pytest
+black
