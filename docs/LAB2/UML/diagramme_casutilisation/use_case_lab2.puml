@@ -1,0 +1,37 @@
+
+@startuml use_case_lab2
+
+actor "Employé de magasin" as Employe
+actor "Gestionnaire maison mère" as Gestionnaire
+
+package "Système de caisse distribué" {
+
+  (UC1: Générer un rapport consolidé des ventes) as UC1
+  (UC2: Consulter le stock et faire une demande de réapprovisionnement) as UC2
+  (UC3: Visualiser les performances dans un dashboard) as UC3
+  (UC4: Mettre à jour les produits) as UC4
+  (UC6: Approvisionner un magasin) as UC6
+
+  Employe --> UC2
+  Employe --> UC6
+  Gestionnaire --> UC1
+  Gestionnaire --> UC3
+  Gestionnaire --> UC4
+
+}
+
+note right of UC2
+Inclut :
+- GET /produits
+- POST /demandes
+- GET /demandes
+end note
+
+note right of UC3
+Dashboard React :
+- ventes totales
+- produits vendus
+- ruptures, surstocks
+end note
+
+@enduml

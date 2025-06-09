@@ -1,0 +1,38 @@
+@startuml diagramme_classes_lab2
+
+class Produit {
+    +id: int
+    +nom: str
+    +categorie: str
+    +prix: float
+    +quantite_stock: int
+}
+
+class Vente {
+    +id: int
+    +date: datetime
+    +total: float
+    +magasin: str
+}
+
+class LigneVente {
+    +id: int
+    +produit_id: int
+    +quantite: int
+    +sous_total: float
+}
+
+class DemandeApprovisionnement {
+    +id: int
+    +produit_id: int
+    +quantite: int
+    +magasin: str
+    +statut: str
+}
+
+' Relations
+Produit "1" <-- "0..*" LigneVente : vendu par
+Vente "1" --> "1..*" LigneVente : contient
+Produit "1" <-- "0..*" DemandeApprovisionnement : demandé par
+
+@enduml
