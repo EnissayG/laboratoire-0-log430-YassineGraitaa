@@ -1,27 +1,24 @@
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session  # ✅ Ajout nécessaire
+from sqlalchemy.orm import Session
 from datetime import datetime
-from sqlalchemy import func
+from sqlalchemy import func, cast, Date
 
-from app.models import Produit, Vente, LigneVente
+from app.models import Produit, Vente, LigneVente, Magasin  # ✅ Magasin importé
 
 
 def enregistrer_vente(
-    produits_selectionnes: list[dict], magasin: str, session: Session
+    produits_selectionnes: list[dict],
+    magasin_id: int,
+    session: Session,
+    date_vente=None,
 ) -> Vente | None:
-    """
-    Enregistre une vente complète avec lignes de vente et mise à jour de stock.
-
-    produits_selectionnes: list of {"produit_id": int, "quantite": int}
-    Exemple :
-        [
-            {"produit_id": 1, "quantite": 2},
-            {"produit_id": 3, "quantite": 1}
-        ]
-    """
     try:
         total = 0
         lignes = []
+
+        magasin = session.get(Magasin, magasin_id)
+        if not magasin:
+            raise ValueError(f"Magasin ID {magasin_id} introuvable.")
 
         for item in produits_selectionnes:
             produit = session.get(Produit, item["produit_id"])
@@ -42,7 +39,12 @@ def enregistrer_vente(
             produit.quantite_stock -= quantite
 
         vente = Vente(
-            date=datetime.utcnow(), total=total, lignes=lignes, magasin=magasin
+            date=(
+                datetime.fromisoformat(date_vente) if date_vente else datetime.utcnow()
+            ),
+            total=total,
+            lignes=lignes,
+            magasin_id=magasin_id,
         )
         session.add(vente)
         session.commit()
@@ -62,55 +64,61 @@ def lister_ventes(session: Session):
 def generer_rapport(session: Session):
     rapport = {}
 
-    # Total des ventes
     total_ventes = session.query(func.sum(Vente.total)).scalar() or 0
     rapport["total_ventes"] = float(total_ventes)
 
-    # Produits les plus vendus
     produits = (
         session.query(
             Produit.nom,
+            Produit.categorie,
             func.sum(LigneVente.quantite).label("quantite_totale"),
             func.sum(LigneVente.sous_total).label("revenu_total"),
         )
         .join(LigneVente, LigneVente.produit_id == Produit.id)
-        .group_by(Produit.nom)
+        .group_by(Produit.nom, Produit.categorie)
         .order_by(func.sum(LigneVente.quantite).desc())
         .all()
     )
     rapport["produits"] = [
-        {"nom": nom, "quantite": int(q), "revenu": float(r)} for nom, q, r in produits
+        {"nom": nom, "categorie": cat, "quantite": int(q), "revenu": float(r)}
+        for nom, cat, q, r in produits
     ]
 
-    # Produits en rupture
     ruptures = session.query(Produit).filter(Produit.quantite_stock == 0).all()
     rapport["ruptures"] = [{"nom": p.nom, "categorie": p.categorie} for p in ruptures]
 
-    # Produits en surstock (seuil arbitraire : > 50 unités)
     surstocks = session.query(Produit).filter(Produit.quantite_stock > 50).all()
     rapport["surstocks"] = [
-        {"nom": p.nom, "stock": p.quantite_stock} for p in surstocks
+        {"nom": p.nom, "categorie": p.categorie, "stock": p.quantite_stock}
+        for p in surstocks
     ]
 
-    # Chiffre d'affaires par magasin
     ventes_par_magasin = (
-        session.query(Vente.magasin, func.sum(Vente.total).label("total"))
-        .group_by(Vente.magasin)
+        session.query(Magasin.nom, func.sum(Vente.total).label("total"))
+        .join(Vente)
+        .group_by(Magasin.nom)
         .all()
     )
     rapport["ventes_par_magasin"] = [
         {"magasin": m, "total": float(t)} for m, t in ventes_par_magasin
     ]
 
+    tendance = (
+        session.query(
+            cast(Vente.date, Date).label("jour"), func.sum(Vente.total).label("total")
+        )
+        .group_by(cast(Vente.date, Date))
+        .order_by(cast(Vente.date, Date))
+        .all()
+    )
+    rapport["tendance_journaliere"] = [
+        {"jour": str(jour), "total": float(total)} for jour, total in tendance
+    ]
+
     return rapport
 
 
 def annuler_vente(vente_id: int, session: Session) -> bool:
-    """
-    Annule une vente : supprime la vente et remet les quantités dans le stock.
-
-    Retourne True si succès, False sinon.
-    """
     try:
         vente = session.get(Vente, vente_id)
         if not vente:

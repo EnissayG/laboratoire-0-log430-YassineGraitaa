@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API from "./api";
 import axios from "axios";
 import {
   BarChart,
@@ -22,8 +23,11 @@ function App() {
   const [rapport, setRapport] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/ventes/rapport")
-      .then(response => setRapport(response.data))
+    API.get("/ventes/rapport")
+      .then(response => {
+      console.log("📦 Données reçues du backend :", response.data); // 👈 ICI
+      setRapport(response.data);
+    })
       .catch(error => console.error("Erreur de chargement :", error));
   }, []);
 

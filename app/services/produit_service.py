@@ -8,13 +8,19 @@ def afficher_tout_le_stock(session):
     return session.query(Produit).all()
 
 
-def ajouter_produit(nom, categorie, prix, quantite_stock, session):
+def ajouter_produit(nom, categorie, prix, quantite_stock, magasin_id, db: Session):
+    from app.models.produit import Produit
+
     produit = Produit(
-        nom=nom, categorie=categorie, prix=prix, quantite_stock=quantite_stock
+        nom=nom,
+        categorie=categorie,
+        prix=prix,
+        quantite_stock=quantite_stock,
+        magasin_id=magasin_id,  # 🔥 ASSOCIER LE MAGASIN
     )
-    session.add(produit)
-    session.commit()
-    session.refresh(produit)  # <== pour recharger les données (ex: id généré)
+    db.add(produit)
+    db.commit()
+    db.refresh(produit)
     return produit
 
 
@@ -60,7 +66,7 @@ def creer_demande_approvisionnement(
     demande = DemandeApprovisionnement(
         produit_id=demande_data["produit_id"],
         quantite=demande_data["quantite"],
-        magasin=demande_data["magasin"],
+        magasin_id=demande_data["magasin_id"],
         statut="en_attente",
     )
     session.add(demande)

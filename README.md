@@ -74,7 +74,8 @@ docker-compose up --build
 python -m pytest
 
 # Ou via Docker Compose
-docker-compose run --rm app pytest
+docker-compose run --rm api pytest tests/test_rapports.py
+
 ```
 
 ---
