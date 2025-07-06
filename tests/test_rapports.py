@@ -5,10 +5,11 @@ from app.main import app
 
 client = TestClient(app)
 
+
 def test_rapport_ventes_endpoint():
     response = client.get(
         "/api/rapports/ventes",
-        params={"date_debut": "2024-01-01", "date_fin": "2025-12-31"}
+        params={"date_debut": "2024-01-01", "date_fin": "2025-12-31"},
     )
 
     assert response.status_code == 200

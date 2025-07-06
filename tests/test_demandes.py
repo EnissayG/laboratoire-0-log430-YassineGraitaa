@@ -3,6 +3,7 @@ from app.main import app
 from app.db import Base, engine, get_session
 from sqlalchemy.orm import sessionmaker
 import uuid
+
 # Créer une session de test
 TestSession = sessionmaker(bind=engine)
 client = TestClient(app)
@@ -11,6 +12,7 @@ client = TestClient(app)
 
 
 import uuid
+
 
 def creer_magasin_et_produit():
     session = TestSession()
@@ -31,7 +33,7 @@ def creer_magasin_et_produit():
         categorie="TestCat",
         prix=10.0,
         quantite_stock=5,
-        magasin_id=magasin_id
+        magasin_id=magasin_id,
     )
     session.add(produit)
     session.commit()
@@ -48,11 +50,7 @@ def creer_magasin_et_produit():
 def test_creer_demande():
     magasin_id, produit_id = creer_magasin_et_produit()
 
-    payload = {
-        "produit_id": produit_id,
-        "quantite": 10,
-        "magasin_id": magasin_id
-    }
+    payload = {"produit_id": produit_id, "quantite": 10, "magasin_id": magasin_id}
 
     response = client.post("/api/demandes/", json=payload)
     assert response.status_code == 200
@@ -62,6 +60,7 @@ def test_creer_demande():
     assert data["magasin_id"] == magasin_id
     assert data["statut"] == "en_attente"
 
+
 # =============================
 # 🔹 UC5 – Traiter une demande
 # =============================
@@ -69,11 +68,7 @@ def test_traiter_demande():
     magasin_id, produit_id = creer_magasin_et_produit()
 
     # Créer une demande d’approvisionnement
-    payload = {
-        "produit_id": produit_id,
-        "quantite": 5,
-        "magasin_id": magasin_id
-    }
+    payload = {"produit_id": produit_id, "quantite": 5, "magasin_id": magasin_id}
 
     resp = client.post("/api/demandes/", json=payload)
     assert resp.status_code == 200

@@ -7,11 +7,10 @@ client = TestClient(app)
 
 
 def test_creer_magasin():
-    response = client.post("/api/magasins/", json={
-        "nom": "TestMagasin",
-        "adresse": "123 rue Test",
-        "ville": "Testville"
-    })
+    response = client.post(
+        "/api/magasins/",
+        json={"nom": "TestMagasin", "adresse": "123 rue Test", "ville": "Testville"},
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["nom"] == "TestMagasin"
@@ -28,10 +27,10 @@ def test_lister_magasins():
 
 
 def test_modifier_magasin():
-    response = client.put(f"/api/magasins/{MAGASIN_ID}", json={
-        "nom": "MagasinModifie",
-        "ville": "VilleModifiee"
-    })
+    response = client.put(
+        f"/api/magasins/{MAGASIN_ID}",
+        json={"nom": "MagasinModifie", "ville": "VilleModifiee"},
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["nom"] == "MagasinModifie"

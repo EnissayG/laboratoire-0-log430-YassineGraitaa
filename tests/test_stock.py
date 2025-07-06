@@ -5,6 +5,7 @@ from app.main import app
 
 client = TestClient(app)
 
+
 def test_stock_endpoint():
     response = client.get("/api/stock/")
     assert response.status_code == 200
