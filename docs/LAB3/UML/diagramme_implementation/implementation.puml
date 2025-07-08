@@ -1,0 +1,55 @@
+@startuml
+title Vue d'implémentation – Architecture 3-tier (FastAPI + React)
+
+package "Frontend (React)" {
+  class App
+  class Dashboard
+  class axiosService
+  note right of Dashboard : Interface web (tableau de bord)
+}
+
+package "API (FastAPI)" {
+  class main
+  class produits_router
+  class ventes_router
+  class demandes_router
+  note right of main : Point d’entrée de l’API
+}
+
+package "Logique métier" {
+  class ProduitService
+  class VenteService
+  note right of ProduitService : Règles métier découplées
+}
+
+package "Persistance" {
+  class Produit
+  class Vente
+  class LigneVente
+  class DB
+  note right of DB : SQLAlchemy + PostgreSQL
+}
+
+' Relations côté frontend
+App --> Dashboard : afficher
+Dashboard --> axiosService : appels HTTP
+
+' Relations entre frontend et backend
+axiosService --> main : requêtes REST
+
+' Backend
+main --> produits_router : routeur
+main --> ventes_router : routeur
+main --> demandes_router : routeur
+
+produits_router --> ProduitService : utiliser
+ventes_router --> VenteService : utiliser
+demandes_router --> ProduitService : utiliser
+
+ProduitService --> Produit : accéder
+ProduitService --> DB : requêtes
+VenteService --> Vente : accéder
+VenteService --> LigneVente : créer
+VenteService --> DB : requêtes
+
+@enduml

@@ -26,8 +26,8 @@ jobs:
     - name: ✅ Lint du code
       run: black --check .
 
-    - name: 🧪 Tests (limités)
-      run: pytest tests/test_ping.py  # 🔥 pour éviter d’appeler la DB
+    - name: 🧪 Exécuter tous les tests
+      run: pytest tests/
 
   docker-build:
     needs: build-test

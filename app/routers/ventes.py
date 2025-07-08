@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from app.securite import verifier_token
 from app.db import get_session
 from app.services.vente_service import (
     enregistrer_vente,
@@ -18,6 +19,7 @@ router = APIRouter(prefix="/api/ventes", tags=["Ventes"])
 @router.get(
     "/",
     response_model=List[VenteOut],
+    dependencies=[Depends(verifier_token)],
     summary="Lister toutes les ventes",
     description="Retourne la liste complète des ventes enregistrées dans tous les magasins.",
 )
@@ -27,7 +29,8 @@ def get_ventes(session: Session = Depends(get_session)):
 
 @router.get(
     "/rapport",
-    response_model=PerformanceGlobaleDTO,  # ✅ correct ici
+    response_model=PerformanceGlobaleDTO,
+    dependencies=[Depends(verifier_token)],
     summary="Générer un rapport global des ventes",
     description="Retourne un rapport contenant le chiffre d’affaires global par produit et par magasin.",
 )
@@ -39,6 +42,7 @@ def rapport_global(session: Session = Depends(get_session)):
     "/",
     status_code=201,
     response_model=MessageResponse,
+    dependencies=[Depends(verifier_token)],
     summary="Enregistrer une nouvelle vente",
     description="""
 Crée une vente dans un magasin donné.
@@ -78,6 +82,7 @@ def creer_vente(data: dict, session: Session = Depends(get_session)):
     status_code=200,
     response_model=MessageResponse,
     summary="Annuler une vente",
+    dependencies=[Depends(verifier_token)],
     description="Annule une vente en la supprimant du système si elle n’a pas déjà été annulée.",
 )
 def supprimer_vente(vente_id: int, session: Session = Depends(get_session)):

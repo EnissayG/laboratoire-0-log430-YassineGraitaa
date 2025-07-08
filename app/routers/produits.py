@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Query
+from typing import Optional
 from sqlalchemy.orm import Session
 from app.db import get_session
 from app.schemas import ProduitUpdate
+from app.services.produit_service import rechercher_produits_avances
 from app.services.produit_service import (
     afficher_tout_le_stock,
     rechercher_produit,
@@ -10,6 +13,21 @@ from app.services.produit_service import (
 )
 
 router = APIRouter(prefix="/api/produits", tags=["Produits"])
+
+
+@router.get(
+    "/filtrer",
+    summary="Filtrer, trier et paginer les produits",
+    description="Permet de filtrer les produits par catégorie, trier et paginer les résultats.",
+)
+def filtrer_produits(
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=100),
+    sort: str = Query("nom,asc"),
+    categorie: Optional[str] = None,
+    session: Session = Depends(get_session),
+):
+    return rechercher_produits_avances(page, size, sort, categorie, session)
 
 
 @router.get(

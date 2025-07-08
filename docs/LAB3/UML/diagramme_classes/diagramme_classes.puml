@@ -1,0 +1,44 @@
+@startuml diagramme_classes
+
+class Produit {
+  +id: int
+  +nom: str
+  +categorie: str
+  +prix: float
+  +quantite_stock: int
+}
+
+class Magasin {
+  +id: int
+  +nom: str
+  +adresse: str
+  +ville: str
+}
+
+class Vente {
+  +id: int
+  +date: datetime
+  +total: float
+}
+
+class LigneVente {
+  +id: int
+  +quantite: int
+  +sous_total: float
+}
+
+class DemandeApprovisionnement {
+  +id: int
+  +quantite: int
+  +statut: str
+}
+
+Produit "1" -- "0..*" LigneVente : vendu_dans >
+LigneVente "0..*" -- "1" Vente : appartient_à >
+Vente "1" -- "1" Magasin : réalisée_dans >
+Produit "1" -- "0..*" DemandeApprovisionnement : fait_lobjet_de >
+DemandeApprovisionnement "0..*" -- "1" Magasin : pour >
+
+Magasin "1" -- "0..*" Produit : possède >
+
+@enduml

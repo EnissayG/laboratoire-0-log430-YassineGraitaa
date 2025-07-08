@@ -60,6 +60,37 @@ def modifier_produit(produit_id: int, nouvelles_donnees: dict, session: Session)
     return produit
 
 
+def rechercher_produits_avances(page, size, sort, categorie, session):
+    query = session.query(Produit)
+
+    # 🔍 Filtrage
+    if categorie:
+        query = query.filter(Produit.categorie.ilike(f"%{categorie}%"))
+
+    # 🔀 Tri robuste
+    try:
+        sort_field, sort_order = sort.split(",")
+    except ValueError:
+        sort_field, sort_order = "nom", "asc"
+
+    sort_col = getattr(Produit, sort_field, Produit.nom)
+    if sort_order == "desc":
+        sort_col = sort_col.desc()
+    else:
+        sort_col = sort_col.asc()
+    query = query.order_by(sort_col)
+
+    total = query.count()
+    produits = query.offset((page - 1) * size).limit(size).all()
+
+    return {
+        "total": total,
+        "page": page,
+        "size": size,
+        "produits": produits,
+    }
+
+
 def creer_demande_approvisionnement(
     demande_data: dict, session: Session
 ) -> DemandeApprovisionnement:

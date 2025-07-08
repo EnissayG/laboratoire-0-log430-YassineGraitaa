@@ -3,7 +3,15 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from sqlalchemy import func, cast, Date
 
-from app.models import Produit, Vente, LigneVente, Magasin  # ✅ Magasin importé
+from app.models import Produit, Vente, LigneVente, Magasin
+
+# Cache local (valide tant que l'app tourne)
+_cached_rapport = None
+
+
+def reset_cache_rapport():
+    global _cached_rapport
+    _cached_rapport = None
 
 
 def enregistrer_vente(
@@ -49,6 +57,8 @@ def enregistrer_vente(
         session.add(vente)
         session.commit()
 
+        reset_cache_rapport()  # Invalide le cache si vente ajoutée
+
         return vente
 
     except (SQLAlchemyError, ValueError) as e:
@@ -62,6 +72,10 @@ def lister_ventes(session: Session):
 
 
 def generer_rapport(session: Session):
+    global _cached_rapport
+    if _cached_rapport is not None:
+        return _cached_rapport
+
     rapport = {}
 
     total_ventes = session.query(func.sum(Vente.total)).scalar() or 0
@@ -85,7 +99,10 @@ def generer_rapport(session: Session):
     ]
 
     ruptures = session.query(Produit).filter(Produit.quantite_stock == 0).all()
-    rapport["ruptures"] = [{"nom": p.nom, "categorie": p.categorie} for p in ruptures]
+    rapport["ruptures"] = [
+        {"nom": p.nom, "categorie": p.categorie, "stock": p.quantite_stock}
+        for p in ruptures
+    ]
 
     surstocks = session.query(Produit).filter(Produit.quantite_stock > 50).all()
     rapport["surstocks"] = [
@@ -115,6 +132,7 @@ def generer_rapport(session: Session):
         {"jour": str(jour), "total": float(total)} for jour, total in tendance
     ]
 
+    _cached_rapport = rapport
     return rapport
 
 
@@ -131,6 +149,9 @@ def annuler_vente(vente_id: int, session: Session) -> bool:
 
         session.delete(vente)
         session.commit()
+
+        reset_cache_rapport()  # Invalide le cache si vente supprimée
+
         return True
 
     except Exception as e:

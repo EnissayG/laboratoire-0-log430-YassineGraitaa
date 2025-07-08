@@ -1,0 +1,21 @@
+@startuml sequence_authentification_token
+
+actor Utilisateur
+participant "Frontend React\nou outil HTTP" as Client
+participant "FastAPI Middleware\n(securite.py)" as Middleware
+participant "Route API (produits.py)" as API
+participant "Service produit" as Service
+
+Utilisateur -> Client : Envoie requête HTTP avec x-token
+Client -> Middleware : Requête HTTP (GET /produits)\nx-token: mon-token-secret
+Middleware -> Middleware : Vérifie validité du token
+Middleware --> API : Si token valide
+API -> Service : Récupérer les produits
+Service --> API : Liste de produits
+API --> Client : Réponse HTTP (200 OK)
+
+note right of Middleware
+Si le token est invalide :\nRéponse HTTP 401 Unauthorized
+end note
+
+@enduml

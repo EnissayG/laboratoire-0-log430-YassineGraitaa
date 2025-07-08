@@ -1,0 +1,20 @@
+@startuml
+title Diagramme de séquence – Génération d’un rapport de ventes (UC1)
+
+actor "Gestionnaire"
+participant "FastAPI\n(Router: ventes.py)" as API
+participant "Service\n(vente_service.py)" as Service
+participant "Base de données\n(PostgreSQL via SQLAlchemy)" as BDD
+
+"Gestionnaire" -> API : GET /ventes/rapport
+API -> Service : generer_rapport()
+
+Service -> BDD : SELECT SUM(total) FROM ventes
+Service -> BDD : SELECT produit.nom, SUM(quantite), SUM(sous_total) FROM lignes_vente JOIN produits GROUP BY produit.nom
+Service -> BDD : SELECT * FROM produits WHERE quantite_stock = 0
+Service -> BDD : SELECT * FROM produits WHERE quantite_stock > 50
+
+Service --> API : JSON rapport
+API --> "Gestionnaire" : 200 OK + rapport
+
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+title Diagramme de séquence – Création d'une demande d’approvisionnement (UC5)
+
+actor Employé
+participant "FastAPI\n(Router: demandes.py)" as API
+participant "Service\n(demande_service.py)"      as Service
+participant "Base de données\n(PostgreSQL via SQLAlchemy)" as BDD
+
+Employé -> API : POST /api/demandes\n{ produit_id, quantité }
+API -> BDD : SELECT * FROM produits WHERE id = produit_id
+alt Produit introuvable
+    API --> Employé : 404 Produit non trouvé
+else Produit valide
+    API -> Service : creer_demande_approvisionnement(produit_id, quantité)
+    Service -> BDD : INSERT INTO demandes_approvisionnement\n(produit_id, quantité, statut="en_attente")
+    BDD --> Service : OK
+    Service --> API : { id_demande, statut:"en_attente" }
+    API --> Employé : 201 Created + JSON
+end
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+title Diagramme de séquence – Enregistrement d'une vente (UC1)
+
+actor "Employé magasin"
+participant "FastAPI\n(Router: ventes.py)" as API
+participant "Service\n(vente_service.py)" as Service
+participant "Base de données\n(PostgreSQL via SQLAlchemy)" as BDD
+
+"Employé magasin" -> API : POST /ventes/ \n{ magasin, panier }
+API -> Service : enregistrer_vente(panier, magasin)
+
+loop pour chaque produit du panier
+    Service -> BDD : SELECT * FROM produits WHERE id = produit_id
+    alt Stock insuffisant
+        Service --> API : ValueError
+        API --> "Employé magasin" : 400 Stock insuffisant
+        return
+    else OK
+        Service -> BDD : UPDATE produits SET quantite_stock -= quantité
+        Service -> LigneVente : créer objet LigneVente
+    end
+end
+
+Service -> Vente : créer objet Vente (avec lignes)
+Service -> BDD : INSERT INTO ventes
+Service -> BDD : INSERT INTO lignes_vente
+BDD --> Service : OK
+Service --> API : vente enregistrée
+API --> "Employé magasin" : 200 OK + vente_id + total
+
+@enduml

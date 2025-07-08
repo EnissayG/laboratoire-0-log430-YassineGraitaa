@@ -1,0 +1,71 @@
+### Lister tous les produits
+GET http://localhost:8000/api/produits/
+x-token: mon-token-secret
+
+### Ajouter un produit
+POST http://localhost:8000/api/produits/?nom=Fraise&categorie=fruit&prix=3.99&quantite_stock=50&magasin_id=1
+x-token: mon-token-secret
+
+### Rechercher un produit
+GET http://localhost:8000/api/produits/recherche?critere=Fraise
+x-token: mon-token-secret
+
+### Lister toutes les ventes
+GET http://localhost:8000/api/ventes/
+x-token: mon-token-secret
+
+### Générer un rapport global des ventes
+GET http://localhost:8000/api/ventes/rapport
+x-token: mon-token-secret
+
+### Créer une vente
+POST http://localhost:8000/api/ventes/
+Content-Type: application/json
+x-token: mon-token-secret
+
+{
+  "magasin_id": 1,
+  "date": "2025-07-06",
+  "panier": [
+    { "produit_id": 1, "quantite": 2 },
+    { "produit_id": 2, "quantite": 1 }
+  ]
+}
+
+### Lister les demandes d’approvisionnement
+GET http://localhost:8000/api/demandes/
+x-token: mon-token-secret
+
+### Créer une demande d’approvisionnement
+POST http://localhost:8000/api/demandes/
+Content-Type: application/json
+x-token: mon-token-secret
+
+{
+  "produit_id": 1,
+  "quantite": 20,
+  "magasin_id": 1
+}
+
+### Traiter une demande
+POST http://localhost:8000/api/demandes/traiter/1
+x-token: mon-token-secret
+
+### Lister tous les magasins
+GET http://localhost:8000/api/magasins/
+x-token: mon-token-secret
+
+### Créer un magasin
+POST http://localhost:8000/api/magasins/
+Content-Type: application/json
+x-token: mon-token-secret
+
+{
+  "nom": "Magasin Montréal",
+  "adresse": "123 Rue Sainte-Catherine",
+  "ville": "Montréal"
+}
+
+### Afficher le stock d’un magasin
+GET http://localhost:8000/api/magasins/1/stock
+x-token: mon-token-secret

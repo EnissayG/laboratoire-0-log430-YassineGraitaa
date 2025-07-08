@@ -1,10 +1,10 @@
-# LOG430 – Laboratoire 1 & 2 : Système de caisse (3-tier + dashboard)
+# LOG430 – Laboratoire 1, 2 & 3 : Système de caisse (3-tier + API REST + dashboard)
 
 ## 🧩 Description du projet
 
-Ce projet évolue d’une application **console conteneurisée (Lab 1)** vers une **application distribuée (Lab 2)** avec API REST (FastAPI) et dashboard web (React).
+Ce projet évolue d’une application **console conteneurisée (Lab 1)** vers une **application distribuée (Lab 2)**, puis une **API RESTful sécurisée (Lab 3)** avec dashboard web.
 
-Il est développé dans le cadre des laboratoires du cours **LOG430 – Architecture Logicielle (Été 2025)**.
+Développé dans le cadre des laboratoires du cours **LOG430 – Architecture Logicielle (Été 2025)**.
 
 ---
 
@@ -17,12 +17,22 @@ Il est développé dans le cadre des laboratoires du cours **LOG430 – Architec
 - 🔁 Annuler une vente
 - 📦 Consulter l’état du stock
 
-### Lab 2 (3-tier, web API + React)
-- 🌐 API REST avec FastAPI (produits, ventes, réapprovisionnement)
-- 🗂️ Gestion des demandes de stock
-- 📊 Dashboard visuel avec React : ventes, ruptures, surstock
+### Lab 2 (3-tier, API + Frontend)
+- 🌐 API REST (produits, ventes, réapprovisionnement)
 - 🧾 Génération de rapport de ventes (UC1)
-- ✅ Couverture UC1 à UC6, UC8 (option B)
+- 🧂 Visualiser le stock par magasin (UC2)
+- 📊 Visualiser les performances globales (UC3)
+- 🧼 Mise à jour d’un produit (UC4)
+- 🧠 Logique métier bien séparée (services)
+
+### Lab 3 (API avancée)
+- ✅ Authentification minimale (token statique)
+- 🔐 Endpoints sécurisés avec `x-token`
+- 📜 Documentation Swagger personnalisée
+- 🧪 Tests API avec fichier `.http` (ou Postman)
+- 🧠 Mise en cache (`@lru_cache`) sur `/performance/global`
+- 📦 Format structuré des erreurs
+- 🔍 Filtrage, pagination et tri des produits (bonus)
 
 ---
 
@@ -34,8 +44,8 @@ Il est développé dans le cadre des laboratoires du cours **LOG430 – Architec
 │   ├── models/                   # Modèles ORM
 │   ├── routers/                  # Routes API REST
 │   ├── services/                 # Logique métier
-│   ├── db.py / main.py / schemas.py
-├── tests/                        # Tests Pytest
+│   ├── db.py / main.py / schemas.py / securite.py
+├── tests/                        # Tests Pytest + lab3.http
 ├── frontend/dashboard/          # Interface React (UC3/UC8)
 ├── docker-compose.yml / Dockerfile
 ├── requirements.txt             # Dépendances backend
@@ -54,67 +64,68 @@ git clone https://github.com/EnissayG/laboratoire-0-log430-YassineGraitaa.git
 cd laboratoire-0-log430-YassineGraitaa/
 ```
 
----
-
-### 2. Lancer toute l’architecture (FastAPI + PostgreSQL + dashboard React)
+### 2. Lancer l’architecture (FastAPI + PostgreSQL + React)
 
 ```bash
 docker-compose up --build
 ```
 
-- 🔹 Accès API : http://localhost:8000/docs
-- 🔹 Accès dashboard : http://localhost:3000
+- 🧠 API Swagger : http://localhost:8000/docs
+- 💻 Frontend : http://localhost:3000
+
+💡 Le token est requis pour les endpoints sensibles :  
+Ajouter le header `x-token: mon-token-secret` dans Swagger ou Postman.
 
 ---
 
-### 3. Exécuter les tests
+### 3. Tester l’API
 
 ```bash
 # En local
-python -m pytest
+pytest
 
-# Ou via Docker Compose
-docker-compose run --rm api pytest tests/test_rapports.py
-
+# Via Docker
+docker-compose exec api pytest
 ```
 
----
-
-### 4. Formater le code Python avec Black
-
-```bash
-python -m black .
-```
-
-> Le style est automatiquement vérifié dans la CI avec `black --check .`
+Fichier `.http` dans `tests/lab3.http`
 
 ---
 
-## 🔁 CI/CD (GitHub Actions)
+## ✅ CI/CD (GitHub Actions)
 
-Déclenchée à chaque `push` sur `main`.
+Déclenchée à chaque `push`.
 
-Étapes automatisées :
-1. ✅ **Lint** avec `black`
-2. ✅ **Tests** via `pytest`
-3. ✅ **Build Docker** image backend
-4. ✅ **Push Docker Hub** : `docker.io/<votre_nom>/log430-app`
+- `black` (style Python)
+- `pytest`
+- Build & test Docker image
 
 ---
 
-## 🧼 Bonnes pratiques appliquées
+## 📚 Documentation API (Swagger)
 
-- Architecture 3-tier : base de données, API, frontend React
-- Découplage total (routes, services, modèles)
-- ORM SQLAlchemy + Pydantic (v2)
-- Dashboard React avec Recharts pour UC3 + UC8
-- Tests unitaires + CI avec GitHub Actions
-- Lint automatique avec `black`
-- Déploiement conteneurisé (Docker Compose)
+- ✅ Toutes les routes ont un `summary` + `description`
+- ✅ `response_model` défini
+- ✅ Sécurité documentée (`x-token`)
+- ✅ Champs `example=` dans les DTOs (certains)
+- ✅ Swagger modifié via `custom_openapi()`
+
+---
+
+## ✨ Bonnes pratiques REST
+
+- URI claires : `/api/produits`, `/api/ventes`
+- Verb HTTP bien utilisés (GET, POST, PUT, DELETE)
+- Codes HTTP standardisés
+- Message d’erreur normalisé (format JSON)
+- Séparation des couches (services / routes)
+- Filtrage et pagination (bonus)
+- Mise en cache (bonus)
 
 ---
 
 ## 📄 Licence
 
-Projet académique – cours LOG430 (Architecture Logicielle) à l’ÉTS – Été 2025.  
-Développé par **Yassine Graitaa**.
+Projet académique LOG430 – Été 2025  
+Développé par **Yassine Graitaa** – `Étudiant ÉTS`  
+📅 Mis à jour le 2025-07-07

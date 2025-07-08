@@ -1,0 +1,28 @@
+@startuml
+title Vue de déploiement – Architecture 3-tier (FastAPI + PostgreSQL + React)
+
+node "Machine Virtuelle (VM)" {
+
+  node "Docker Container : Frontend" {
+    component "React App (Dashboard)"
+    note bottom of "React App (Dashboard)" : UI Web - Tableaux de bord \net appels REST
+  }
+
+  node "Docker Container : Backend API" {
+    component "FastAPI App (main.py)"
+    component "Routers"
+    component "Services"
+    component "Models (ORM)"
+    component "Schemas (Pydantic)"
+  }
+
+  node "Docker Container : Base de données" {
+    database "PostgreSQL DB"
+    note bottom of "PostgreSQL DB" : Conteneur isolé\npersisté avec Docker Volume
+  }
+}
+
+"React App (Dashboard)" --> "FastAPI App (main.py)" : Appels HTTP REST
+"Models (ORM)" --> "PostgreSQL DB" : Connexion SQLAlchemy
+
+@enduml

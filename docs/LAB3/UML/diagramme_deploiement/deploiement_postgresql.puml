@@ -1,0 +1,24 @@
+@startuml
+title Vue de déploiement – Architecture 3-tier (API + PostgreSQL uniquement)
+
+node "Machine Virtuelle (VM)" {
+
+  node "Docker Container : Backend API" {
+    component "FastAPI App (main.py)"
+    component "Routers"
+    component "Services"
+    component "Models (ORM)"
+    component "Schemas (Pydantic)"
+  }
+
+  node "Docker Container : Base de données" {
+    database "PostgreSQL DB"
+    note bottom of "PostgreSQL DB" : Conteneur séparé via Docker Compose
+  }
+}
+
+"Routers" --> "Services"
+"Services" --> "Models (ORM)"
+"Models (ORM)" --> "PostgreSQL DB" : SQLAlchemy
+
+@enduml

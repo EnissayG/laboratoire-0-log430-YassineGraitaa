@@ -158,7 +158,7 @@ class ProduitStockDTO(BaseModel):
 
 class VenteOut(BaseModel):
     id: int
-    date: str
+    date: datetime  # ✅ Ceci accepte un datetime et le convertit automatiquement en string ISO
     magasin_id: int
     total: float
 

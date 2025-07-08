@@ -1,0 +1,17 @@
+@startuml sequence_filtrage_tri_pagination
+
+actor Gestionnaire
+participant "Client HTTP\n(VSCode.http / Postman)" as Client
+participant "Route API /produits/filter" as API
+participant "Service produit" as Service
+participant "Base de données (PostgreSQL)" as DB
+
+Gestionnaire -> Client : Requête GET /produits/filter\n?page=1&size=10&sort=prix,desc&categorie=fruit
+Client -> API : GET /produits/filter
+API -> Service : Appliquer filtres, tri et pagination
+Service -> DB : SELECT * FROM produits\nWHERE categorie='fruit'\nORDER BY prix DESC\nLIMIT 10 OFFSET 0
+DB --> Service : Résultats produits paginés
+Service --> API : Liste paginée
+API --> Client : Réponse HTTP 200 + JSON
+
+@enduml

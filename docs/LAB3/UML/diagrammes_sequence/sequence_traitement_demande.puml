@@ -1,0 +1,24 @@
+@startuml
+title Diagramme de séquence – Traitement d'une demande d'approvisionnement (UC6)
+
+actor Employé
+participant "FastAPI\n(Router: demandes.py)" as API
+participant "Service\n(produit_service.py)" as Service
+participant "Base de données\n(PostgreSQL via SQLAlchemy)" as BDD
+
+Employé -> API : POST /demandes/traiter/{demande_id}
+API -> Service : traiter_demande_approvisionnement(demande_id)
+
+Service -> BDD : SELECT * FROM demandes WHERE id = demande_id
+alt Demande non trouvée ou déjà traitée
+    Service --> API : None
+    API --> Employé : 404 Not Found
+else Demande valide
+    Service -> BDD : SELECT * FROM produits WHERE id = demande.produit_id
+    Service -> BDD : UPDATE produit.quantite_stock += demande.quantite
+    Service -> BDD : UPDATE demande.statut = "traitee"
+    BDD --> Service : OK
+    Service --> API : {"message": "Demande traitée avec succès"}
+    API --> Employé : 200 OK
+end
+@enduml
