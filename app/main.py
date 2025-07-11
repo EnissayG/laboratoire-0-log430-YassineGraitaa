@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from app.db import init_db
 from app.routers.produits import router as produits_router
 from app.routers.ventes import router as ventes_router
@@ -86,3 +87,6 @@ app.include_router(rapports_router)
 @app.get("/")
 def ping():
     return {"message": "Backend caisse opérationnel"}
+
+
+Instrumentator().instrument(app).expose(app)

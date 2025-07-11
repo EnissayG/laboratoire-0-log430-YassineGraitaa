@@ -78,6 +78,28 @@ Ajouter le header `x-token: mon-token-secret` dans Swagger ou Postman.
 
 ---
 
+### 🔁 Développement avec hot reload
+
+#### 🔹 Backend FastAPI
+- Le service API est lancé avec `uvicorn --reload`
+- Les modifications `.py` sont automatiquement détectées.
+
+```bash
+docker-compose up api
+```
+
+#### 🔹 Frontend React
+- Le service frontend utilise `npm start`
+- Hot reload activé avec `react-scripts`
+
+```bash
+docker-compose up frontend
+```
+
+---
+
+
+
 ### 3. Tester l’API
 
 ```bash
