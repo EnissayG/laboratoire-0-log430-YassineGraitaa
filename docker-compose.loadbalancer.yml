@@ -1,0 +1,99 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: lab4-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: magasin
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - lbnet
+
+  fastapi1:
+    build: .
+    container_name: fastapi1
+    depends_on:
+      - db
+    environment:
+      POSTGRES_DB: magasin
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      DB_HOST: db
+      DB_PORT: 5432
+    ports:
+      - "8001:8000"
+    networks:
+      - lbnet
+
+  fastapi2:
+    build: .
+    container_name: fastapi2
+    depends_on:
+      - db
+    environment:
+      POSTGRES_DB: magasin
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      DB_HOST: db
+      DB_PORT: 5432
+    ports:
+      - "8002:8000"
+    networks:
+      - lbnet
+
+  fastapi3:
+    build: .
+    container_name: fastapi3
+    depends_on:
+      - db
+    environment:
+      POSTGRES_DB: magasin
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      DB_HOST: db
+      DB_PORT: 5432
+    ports:
+      - "8003:8000"
+    networks:
+      - lbnet
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-lb
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - fastapi1
+      - fastapi2
+      - fastapi3
+    networks:
+      - lbnet
+      - observability
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx-exporter
+    ports:
+      - "9113:9113"
+    command:
+      - "--nginx.scrape-uri=http://nginx-lb:8080/nginx_status"
+    depends_on:
+      - nginx
+    networks:
+      - lbnet
+      - observability
+
+volumes:
+  postgres-data:
+
+networks:
+  lbnet:
+  observability:
+    external: true

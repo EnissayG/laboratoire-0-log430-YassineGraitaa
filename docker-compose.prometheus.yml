@@ -23,6 +23,7 @@ services:
 
 networks:
   observability:
+    external: true
 
 volumes:
   grafana-data:

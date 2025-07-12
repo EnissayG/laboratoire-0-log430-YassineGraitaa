@@ -141,3 +141,91 @@ montre une montée significative du CPU vers **0.7s/s** (soit ~70 % d'un cœur) 
 ---
 
 L'ensemble de ces actions permettra de **mieux préparer l'application à la montée en charge**, tout en conservant la même infrastructure de base.
+
+
+## 🔁 2.1 Tests de charge via le Load Balancer
+
+Dans cette étape, nous avons déployé un répartiteur de charge (NGINX) devant plusieurs instances de notre API FastAPI.  
+L’objectif est de mesurer l'impact de la scalabilité horizontale sur les performances globales du système, et de valider la résilience en cas de panne d’instance.
+
+Les tests de charge sont identiques à ceux effectués dans l’étape 1, mais dirigés cette fois-ci vers le load balancer via l’URL :
+
+```
+http://localhost:8081
+```
+
+---
+
+### ⚙️ Scénarios testés
+
+Nous avons simulé 3 configurations différentes :
+
+| Configuration | Détail |
+|---------------|--------|
+| N = 1 instance | `fastapi1` uniquement |
+| N = 2 instances | `fastapi1` + `fastapi2` |
+| N = 3 instances *(optionnel)* | `fastapi1` + `fastapi2` + `fastapi3` |
+
+Pour chaque configuration, nous avons répété les tests de charge (via K6) sur les endpoints suivants :
+- `/api/magasins/1/stock`
+- `/api/ventes/rapport`
+- `/api/produits/1`
+
+---
+
+## 📊 Tests de charge avec Load Balancer
+
+Nous avons simulé une montée en charge sur l’endpoint critique `/api/magasins/1/stock` via le port du Load Balancer (`http://host.docker.internal:8081`). L’objectif est de comparer les performances en faisant varier le nombre d’instances FastAPI actives (N = 3, 2, 1).
+
+### ⚙️ Configuration du test
+
+```js
+// test.js - Script K6 utilisé pour la simulation
+import http from 'k6/http';
+import { check } from 'k6';
+
+export let options = {
+  stages: [
+    { duration: '15s', target: 10 },
+    { duration: '15s', target: 30 },
+    { duration: '15s', target: 60 },
+    { duration: '15s', target: 100 },
+    { duration: '15s', target: 0 },
+  ],
+};
+
+export default function () {
+  let res = http.get('http://host.docker.internal:8081/api/magasins/1/stock', {
+    headers: { 'x-token': 'mon-token-secret' },
+  });
+  check(res, { 'status is 200': (r) => r.status === 200 });
+}
+```
+
+### 🧪 Tests effectués
+
+| Test  | Instances actives         | Commande exécutée                           |
+|-------|---------------------------|---------------------------------------------|
+| N = 3 | `fastapi1`, `fastapi2`, `fastapi3` | `k6 run test.js` |
+| N = 2 | `fastapi1`, `fastapi2`            | `docker stop fastapi3` puis `k6 run test.js` |
+| N = 1 | `fastapi1`                        | `docker stop fastapi2` puis `k6 run test.js` |
+
+### 📈 Résultats (via Grafana)
+
+![alt text](./images/load_balance_test_3N.png)
+
+- **Premier pic (~15:07)** : N = 3
+- **Deuxième pic (~15:19)** : N = 2
+- **Troisième pic (~15:22)** : N = 1
+
+On observe une **augmentation de la latence moyenne** et une **baisse du throughput** à mesure que l’on réduit le nombre d’instances.
+
+### 🧠 Interprétation
+
+- Le load balancer NGINX distribue correctement les requêtes sur les instances disponibles.
+- Lorsque le nombre d’instances diminue, la **charge par instance augmente**, ce qui se traduit par :
+  - Une **latence plus élevée**
+  - Un **taux d'erreurs potentiellement accru** (à vérifier)
+  - Une **saturation CPU plus marquée** si observée
+- Cela montre l’importance de la **scalabilité horizontale** dans une architecture distribuée.
+
