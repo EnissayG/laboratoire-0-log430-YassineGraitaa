@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query
 from typing import Optional
+import time
 from sqlalchemy.orm import Session
 from app.db import get_session
 from app.schemas import ProduitUpdate
@@ -13,6 +14,11 @@ from app.services.produit_service import (
 )
 
 router = APIRouter(prefix="/api/produits", tags=["Produits"])
+# Caches
+_produits_all_cache = {"data": None, "timestamp": 0}
+_produits_filtre_cache = {}
+_recherche_cache = {}
+CACHE_DURATION = 60
 
 
 @router.get(
@@ -27,7 +33,16 @@ def filtrer_produits(
     categorie: Optional[str] = None,
     session: Session = Depends(get_session),
 ):
-    return rechercher_produits_avances(page, size, sort, categorie, session)
+    now = time.time()
+    key = f"{page}-{size}-{sort}-{categorie}"
+    cache = _produits_filtre_cache.get(key)
+
+    if cache and now - cache["timestamp"] < CACHE_DURATION:
+        return cache["data"]
+
+    data = rechercher_produits_avances(page, size, sort, categorie, session)
+    _produits_filtre_cache[key] = {"data": data, "timestamp": now}
+    return data
 
 
 @router.get(
@@ -36,7 +51,14 @@ def filtrer_produits(
     description="Retourne tous les produits enregistrés dans tous les magasins.",
 )
 def get_all(session: Session = Depends(get_session)):
-    return afficher_tout_le_stock(session)
+    now = time.time()
+    if now - _produits_all_cache["timestamp"] < CACHE_DURATION:
+        return _produits_all_cache["data"]
+
+    data = afficher_tout_le_stock(session)
+    _produits_all_cache["data"] = data
+    _produits_all_cache["timestamp"] = now
+    return data
 
 
 @router.get(
@@ -45,7 +67,15 @@ def get_all(session: Session = Depends(get_session)):
     description="Recherche un produit par nom, catégorie ou ID numérique.",
 )
 def rechercher(critere: str, session: Session = Depends(get_session)):
-    return rechercher_produit(critere, session)
+    now = time.time()
+    cache = _recherche_cache.get(critere)
+
+    if cache and now - cache["timestamp"] < CACHE_DURATION:
+        return cache["data"]
+
+    data = rechercher_produit(critere, session)
+    _recherche_cache[critere] = {"data": data, "timestamp": now}
+    return data
 
 
 @router.post(

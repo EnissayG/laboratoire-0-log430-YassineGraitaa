@@ -1,38 +1,48 @@
-# LOG430 – Laboratoire 1, 2 & 3 : Système de caisse (3-tier + API REST + dashboard)
+# LOG430 – Laboratoire 1, 2, 3 & 4 : Système de caisse distribué observé 🧾🔁📊
 
 ## 🧩 Description du projet
 
-Ce projet évolue d’une application **console conteneurisée (Lab 1)** vers une **application distribuée (Lab 2)**, puis une **API RESTful sécurisée (Lab 3)** avec dashboard web.
+Ce projet évolue d’une application **console (Lab 1)** vers une **architecture 3-tier distribuée (Lab 2)**, une **API RESTful avancée (Lab 3)**, puis une **infrastructure scalable avec monitoring et tolérance aux pannes (Lab 4)**.
 
-Développé dans le cadre des laboratoires du cours **LOG430 – Architecture Logicielle (Été 2025)**.
+Développé dans le cadre du cours **LOG430 – Architecture Logicielle (Été 2025)** à l’ÉTS.
 
 ---
 
 ## ⚙️ Fonctionnalités de l'application
 
-### Lab 1 (2-tier, console)
-- 🔍 Rechercher un produit (ID, nom ou catégorie)
-- 🛒 Enregistrer une vente (multi-produits)
+### Lab 1 – Console (2-tier)
+- 🔍 Rechercher un produit
+- 🛒 Enregistrer une vente
 - ➕ Ajouter un produit
-- 🔁 Annuler une vente
-- 📦 Consulter l’état du stock
+- ❌ Annuler une vente
+- 📦 Consulter le stock
 
-### Lab 2 (3-tier, API + Frontend)
-- 🌐 API REST (produits, ventes, réapprovisionnement)
-- 🧾 Génération de rapport de ventes (UC1)
-- 🧂 Visualiser le stock par magasin (UC2)
-- 📊 Visualiser les performances globales (UC3)
-- 🧼 Mise à jour d’un produit (UC4)
-- 🧠 Logique métier bien séparée (services)
+### Lab 2 – Architecture 3-tier (FastAPI + React + PostgreSQL)
+- 🧠 Séparation claire des responsabilités (services)
+- 🌐 API REST : ventes, produits, magasins, réapprovisionnement
+- 📊 Dashboard React (UC3)
+- 🧾 Rapport de ventes et stock (UC1 & UC2)
 
-### Lab 3 (API avancée)
-- ✅ Authentification minimale (token statique)
-- 🔐 Endpoints sécurisés avec `x-token`
-- 📜 Documentation Swagger personnalisée
-- 🧪 Tests API avec fichier `.http` (ou Postman)
-- 🧠 Mise en cache (`@lru_cache`) sur `/performance/global`
-- 📦 Format structuré des erreurs
-- 🔍 Filtrage, pagination et tri des produits (bonus)
+### Lab 3 – API REST avancée
+- ✅ Authentification (`x-token`)
+- 🔐 Sécurisation des routes critiques
+- 📜 Swagger personnalisé (`custom_openapi`)
+- 🧪 Tests `.http` + Pytest
+- 📦 Gestion d’erreurs formatée
+- 🔍 Filtrage / tri / pagination (bonus)
+- ⚡ Cache LRU sur `/performance/global`
+
+### Lab 4 – Observabilité & Scalabilité
+- 🧭 Load Balancer (NGINX) avec 3 stratégies comparées :
+  - Round Robin
+  - Least Connections
+  - IP Hash
+- 📈 Monitoring complet :
+  - Prometheus
+  - Grafana (latence, trafic, erreurs, CPU, connexions)
+- 🧪 Test de charge avec **K6**
+- ⚠️ Test de tolérance aux pannes (instances down)
+- ⚡ Impact du cache observé en live via métriques
 
 ---
 
@@ -40,114 +50,113 @@ Développé dans le cadre des laboratoires du cours **LOG430 – Architecture Lo
 
 ```
 /
-├── app/                          # Backend Python (FastAPI)
-│   ├── models/                   # Modèles ORM
-│   ├── routers/                  # Routes API REST
-│   ├── services/                 # Logique métier
-│   ├── db.py / main.py / schemas.py / securite.py
-├── tests/                        # Tests Pytest + lab3.http
-├── frontend/dashboard/          # Interface React (UC3/UC8)
-├── docker-compose.yml / Dockerfile
-├── requirements.txt             # Dépendances backend
-├── .github/workflows/ci.yml     # Pipeline CI/CD
+├── app/                      # Backend FastAPI
+│   ├── routers/              # Points d’entrée REST (magasins, produits, etc.)
+│   ├── services/             # Logique métier (vente_service, etc.)
+│   ├── models.py / db.py / schemas.py / securite.py
+├── tests/                    # Fichiers .http + tests unitaires
+├── frontend/dashboard/       # React dashboard (perf UC3)
+├── nginx/                    # Fichiers nginx.conf
+├── prometheus/               # Fichier prometheus.yml
+├── docker-compose.yml        # Compose main (FastAPI + DB + NGINX + Exporter)
+├── docker-compose.observ.yml # Compose Prometheus + Grafana
 └── README.md
 ```
 
 ---
 
-## 🚀 Instructions d’exécution
-
-### 1. Cloner le dépôt
+## 🚀 Lancement local
 
 ```bash
+# Cloner le dépôt
 git clone https://github.com/EnissayG/laboratoire-0-log430-YassineGraitaa.git
 cd laboratoire-0-log430-YassineGraitaa/
 ```
 
-### 2. Lancer l’architecture (FastAPI + PostgreSQL + React)
+### Lancer l'application principale
 
 ```bash
 docker-compose up --build
 ```
 
-- 🧠 API Swagger : http://localhost:8000/docs
-- 💻 Frontend : http://localhost:3000
+- API Swagger : http://localhost:8000/docs
+- Frontend React : http://localhost:3000
+- Load Balancer : http://localhost:8081
 
-💡 Le token est requis pour les endpoints sensibles :  
-Ajouter le header `x-token: mon-token-secret` dans Swagger ou Postman.
-
----
-
-### 🔁 Développement avec hot reload
-
-#### 🔹 Backend FastAPI
-- Le service API est lancé avec `uvicorn --reload`
-- Les modifications `.py` sont automatiquement détectées.
+### Lancer les outils d’observabilité
 
 ```bash
-docker-compose up api
+docker-compose -f docker-compose.observ.yml up --build
 ```
 
-#### 🔹 Frontend React
-- Le service frontend utilise `npm start`
-- Hot reload activé avec `react-scripts`
+- Prometheus : http://localhost:9090
+- Grafana : http://localhost:3009 (admin/admin)
+
+💡 Ajoutez un header `x-token: mon-token-secret` sur les routes protégées.
+
+---
+
+## 🧪 Tests et Monitoring
+
+### Test de charge (`K6`)
 
 ```bash
-docker-compose up frontend
+k6 run test.js
 ```
 
----
+Effectué avec 3, 2 puis 1 instance active pour valider la résilience du système.
 
-
-
-### 3. Tester l’API
+### Test de tolérance aux pannes
 
 ```bash
-# En local
-pytest
-
-# Via Docker
-docker-compose exec api pytest
+docker stop fastapi2
+docker stop fastapi3
 ```
 
-Fichier `.http` dans `tests/lab3.http`
+➡️ Vérification dans Grafana des courbes de latence, erreurs et trafic.
 
 ---
 
-## ✅ CI/CD (GitHub Actions)
+## 📊 Dashboards Grafana
 
-Déclenchée à chaque `push`.
-
-- `black` (style Python)
-- `pytest`
-- Build & test Docker image
-
----
-
-## 📚 Documentation API (Swagger)
-
-- ✅ Toutes les routes ont un `summary` + `description`
-- ✅ `response_model` défini
-- ✅ Sécurité documentée (`x-token`)
-- ✅ Champs `example=` dans les DTOs (certains)
-- ✅ Swagger modifié via `custom_openapi()`
+Suivi en temps réel :
+- ⏱ Latence moyenne par handler
+- 🔁 Nombre de connexions (NGINX)
+- ⚠️ Erreurs 4xx / 5xx
+- 📦 Charge CPU
+- 🎯 Impact du cache activé
 
 ---
 
-## ✨ Bonnes pratiques REST
+## 📚 Swagger API (customisé)
 
-- URI claires : `/api/produits`, `/api/ventes`
-- Verb HTTP bien utilisés (GET, POST, PUT, DELETE)
-- Codes HTTP standardisés
-- Message d’erreur normalisé (format JSON)
-- Séparation des couches (services / routes)
-- Filtrage et pagination (bonus)
-- Mise en cache (bonus)
+- Summary / description
+- `response_model` cohérent
+- Champs `example=`
+- Sécurité `x-token` visible
+
+---
+
+## ✅ CI/CD – GitHub Actions
+
+- ✅ Formatage (`black`)
+- ✅ Tests (`pytest`)
+- ✅ Build docker
+- 🔁 Déclenché à chaque `push`
+
+---
+
+## 🧠 Recommandations finales
+
+- 🧠 Le cache améliore nettement la latence et la charge.
+- 🔁 Round Robin est équilibré, IP Hash garantit l’affinité client.
+- 🔥 Le système reste fonctionnel avec seulement 1 instance active.
+- 📦 Architecture modulaire, scalable et observable.
 
 ---
 
 ## 📄 Licence
 
-Projet académique LOG430 – Été 2025  
-Développé par **Yassine Graitaa** – `Étudiant ÉTS`  
-📅 Mis à jour le 2025-07-07
+Projet académique – ÉTS 2025  
+Développé par **Yassine Graitaa** – LOG430  
+📅 Dernière mise à jour : **2025-07-14**

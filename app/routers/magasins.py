@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import get_session
+import time
 from app.schemas import MagasinDTO, MagasinCreate, ProduitStockDTO
 from app.services.magasin_service import (
     creer_magasin,
@@ -12,6 +13,11 @@ from app.services.magasin_service import (
 from typing import List
 
 router = APIRouter(prefix="/api/magasins", tags=["Magasins"])
+
+# Cache
+_magasins_cache = {"data": None, "timestamp": 0}
+_stock_par_magasin_cache = {}
+CACHE_DURATION = 60
 
 
 @router.post(
@@ -31,7 +37,14 @@ def post_magasin(data: MagasinCreate, db: Session = Depends(get_session)):
     description="Retourne la liste de tous les magasins enregistrés.",
 )
 def get_magasins(db: Session = Depends(get_session)):
-    return lister_magasins(db)
+    now = time.time()
+    if now - _magasins_cache["timestamp"] < CACHE_DURATION:
+        return _magasins_cache["data"]
+
+    data = lister_magasins(db)
+    _magasins_cache["data"] = data
+    _magasins_cache["timestamp"] = now
+    return data
 
 
 @router.get(
@@ -41,9 +54,17 @@ def get_magasins(db: Session = Depends(get_session)):
     description="Retourne les produits en stock pour un magasin spécifique (via son ID).",
 )
 def get_stock_magasin(id: int, db: Session = Depends(get_session)):
+    now = time.time()
+    cache = _stock_par_magasin_cache.get(id)
+
+    if cache and now - cache["timestamp"] < CACHE_DURATION:
+        return cache["data"]
+
     produits = get_stock_du_magasin(id, db)
     if produits is None:
         raise HTTPException(status_code=404, detail="Magasin introuvable")
+
+    _stock_par_magasin_cache[id] = {"data": produits, "timestamp": now}
     return produits
 
 

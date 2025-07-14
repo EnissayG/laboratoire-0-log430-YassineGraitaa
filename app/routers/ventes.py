@@ -14,6 +14,9 @@ from app.schemas import PerformanceGlobaleDTO
 from typing import List
 
 router = APIRouter(prefix="/api/ventes", tags=["Ventes"])
+_ventes_cache = {"data": None, "timestamp": 0}
+_rapport_cache = {"data": None, "timestamp": 0}
+CACHE_DURATION = 60
 
 
 @router.get(
@@ -24,7 +27,13 @@ router = APIRouter(prefix="/api/ventes", tags=["Ventes"])
     description="Retourne la liste complète des ventes enregistrées dans tous les magasins.",
 )
 def get_ventes(session: Session = Depends(get_session)):
-    return lister_ventes(session)
+    now = time.time()
+    if now - _ventes_cache["timestamp"] < CACHE_DURATION:
+        return _ventes_cache["data"]
+    data = lister_ventes(session)
+    _ventes_cache["data"] = data
+    _ventes_cache["timestamp"] = now
+    return data
 
 
 @router.get(
@@ -35,7 +44,13 @@ def get_ventes(session: Session = Depends(get_session)):
     description="Retourne un rapport contenant le chiffre d’affaires global par produit et par magasin.",
 )
 def rapport_global(session: Session = Depends(get_session)):
-    return generer_rapport(session)
+    now = time.time()
+    if now - _rapport_cache["timestamp"] < CACHE_DURATION:
+        return _rapport_cache["data"]
+    data = generer_rapport(session)
+    _rapport_cache["data"] = data
+    _rapport_cache["timestamp"] = now
+    return data
 
 
 @router.post(

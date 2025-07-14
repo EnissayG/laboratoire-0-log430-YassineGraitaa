@@ -247,3 +247,76 @@ Afin de vérifier la résilience de notre système distribué, un test de tolér
 📈 _Graphique associé à ce test :_
 
 ![test_tolerance_panne](images/test_tolerance_panne.png)
+
+
+##  Analyse des stratégies de Load Balancing
+##### Tableau comparatif
+
+| Stratégie                | Heure approx. | Distribution du trafic     | Latence moyenne          | Taux d’erreur | Observations clés                     |
+| ------------------------ | ------------- | -------------------------- | ------------------------ | ------------- | ------------------------------------- |
+| **Round Robin**          | 00:23         | Répartition uniforme       | ⚪️ Stable                | ✅ Aucune      | Simple et efficace                    |
+| **Least Connections**    | 00:28         | Dynamique selon charge     | 🟢 Légèrement plus basse | ✅ Aucune      | Bonne adaptabilité si appels longs    |
+| **IP Hash**              | 00:37         | Collé à une seule instance | 🟡 Moyenne               | ✅ Aucune      | Peut surcharger une instance selon IP |
+| **Weighted Round Robin** | 00:43         | Instance priorisée visible | 🟢 Bonne                 | ✅ Aucune      | Bon pour infra hétérogène             |
+
+📌 Interprétation
+Round Robin est une stratégie classique, équilibrée mais aveugle à la charge réelle.
+
+Least Connections est plus intelligent, il s’adapte bien à des temps de réponse variables.
+
+IP Hash est utile pour coller une session à une instance, mais cela peut déséquilibrer le trafic si tous les clients partagent une IP (ex: NAT).
+
+Weighted Round Robin permet de favoriser les serveurs plus puissants.
+
+📈 Graphe correspondant
+
+![test_tolerance_panne](images/strategy_load_balancing.png)
+
+
+## 🧠 Impact de la mise en cache
+
+### ⚙️ Contexte
+Pour améliorer la performance, un système de **cache mémoire local (in-process)** a été mis en place sur plusieurs endpoints clés de l’API :
+
+- `/api/stock/`
+- `/api/rapports/ventes`
+- `/api/performance/global`
+- `/api/ventes/rapport`
+- `/api/magasins/{id}/stock`
+
+Le cache est implémenté via le décorateur `@cache` fourni par `fastapi-cache2`.
+
+---
+
+### 📊 Comparaison avant / après
+
+#### 🔴 Avant cache :
+
+![Avant cache](/docs/LAB4/images/load_balance_test_3N.png) 
+
+- **Pics de latence fréquents**, atteignant jusqu’à `0.012s`
+- **Plus grande saturation CPU**
+- **Taux d’erreurs faible mais présent**
+- Requêtes `/metrics` et `/stock` très sollicitées, non optimisées
+
+---
+
+#### 🟢 Après cache :
+
+
+- ✅ **Latence moyenne réduite**, plus stable
+- ✅ **Moins de saturation CPU (ligne rouge plus basse)**
+- ✅ **Comportement plus fluide même avec charge élevée**
+- ✅ **Diminution du nombre de connexions actives au backend**
+![Apres cache](/docs/LAB4/images/load_balance_test_3N_Cache.png) 
+
+---
+
+### ✅ Conclusion
+
+L’introduction du cache apporte une **meilleure stabilité sous charge** et **réduit les appels répétés coûteux en base de données**, notamment sur les endpoints d’agrégation (`rapports`, `performance`, etc.). Cela permet de :
+- Diminuer la latence globale
+- Soulager PostgreSQL et les workers FastAPI
+- Améliorer l’expérience utilisateur en production
+
+Cette stratégie est donc **fortement recommandée pour tout endpoint non temps-réel** (statique ou semi-statique).
