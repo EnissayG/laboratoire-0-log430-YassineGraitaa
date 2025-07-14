@@ -229,3 +229,21 @@ On observe une **augmentation de la latence moyenne** et une **baisse du through
   - Une **saturation CPU plus marquée** si observée
 - Cela montre l’importance de la **scalabilité horizontale** dans une architecture distribuée.
 
+
+## 🔁 Test de tolérance aux pannes
+
+Afin de vérifier la résilience de notre système distribué, un test de tolérance aux pannes a été effectué :
+
+- 🛑 À **23:53**, l’instance `fastapi2` a été arrêtée manuellement.
+- 🔄 Le **Load Balancer (NGINX)** a redirigé automatiquement le trafic vers les autres instances actives (`fastapi1`, `fastapi3`).
+- 📉 Résultat observé :
+  - La **latence moyenne** reste maîtrisée.
+  - **Aucun pic d’erreurs 4xx ou 5xx**.
+  - Le service est resté **accessible**.
+  - Le nombre de connexions et la saturation CPU montrent un rééquilibrage du trafic.
+
+🎯 **Conclusion** : le système tolère bien la perte d’une instance sans interruption perceptible par l’utilisateur final.
+
+📈 _Graphique associé à ce test :_
+
+![test_tolerance_panne](images/test_tolerance_panne.png)
