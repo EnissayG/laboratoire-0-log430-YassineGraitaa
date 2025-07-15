@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+  # 📦 Base de données du monolithe
   db:
     image: postgres:15
     container_name: log430-postgres
@@ -14,6 +15,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  # 🧱 Application monolithique actuelle
   api:
     build: .
     container_name: log430-app
@@ -32,6 +34,7 @@ services:
     working_dir: /app
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
+  # 🖼️ Frontend React
   frontend:
     build:
       context: ./frontend/dashboard
@@ -45,5 +48,113 @@ services:
     depends_on:
       - api
 
+  # 🔄 Base de données du microservice produits
+  produits-db:
+    image: postgres:15
+    container_name: produits-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: produits
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - produits-data:/var/lib/postgresql/data
+
+  # 🍱 Microservice Produits
+  produits-service:
+    build:
+      context: ./microservices/produits-service
+    container_name: produits-service
+    ports:
+      - "8020:8000"
+    environment:
+      DATABASE_URL: postgresql://user:password@produits-db:5432/produits
+    depends_on:
+      - produits-db
+
+  # 🔄 Base de données du microservice Stock
+  stock-db:
+    image: postgres:15
+    container_name: stock-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: stock
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5434:5432"
+    volumes:
+      - stock-data:/var/lib/postgresql/data
+
+  # 🍱 Microservice Stock
+  stock-service:
+    build:
+      context: ./microservices/stock-service
+    container_name: stock-service
+    ports:
+      - "8021:8000"
+    environment:
+      DATABASE_URL: postgresql://user:password@stock-db:5432/stock
+    depends_on:
+      - stock-db
+
+  # 🔄 Base de données du microservice Vente
+  ventes-db:
+    image: postgres:15
+    container_name: ventes-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ventes
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5435:5432"
+    volumes:
+      - ventes-data:/var/lib/postgresql/data
+
+  # 🍱 Microservice Vente
+  ventes-service:
+    build:
+      context: ./microservices/ventes-service
+    container_name: ventes-service
+    ports:
+      - "8022:8000"
+    environment:
+      DATABASE_URL: postgresql://user:password@ventes-db:5432/ventes
+    depends_on:
+      - ventes-db
+
+  # 🔄 Base de données du microservice Magasin
+  magasin-db:
+    image: postgres:15
+    container_name: magasin-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: magasins
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5436:5432"
+    volumes:
+      - magasin-data:/var/lib/postgresql/data
+
+  # 🏬 Microservice Magasin
+  magasin-service:
+    build:
+      context: ./microservices/magasin-service
+    container_name: magasin-service
+    ports:
+      - "8023:8000"
+    environment:
+      DATABASE_URL: postgresql://user:password@magasin-db:5432/magasins
+    depends_on:
+      - magasin-db
+
 volumes:
   postgres-data:
+  produits-data:
+  stock-data:
+  ventes-data:
+  magasin-data:
