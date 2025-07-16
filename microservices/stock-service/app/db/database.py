@@ -3,7 +3,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 import os
 
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql://user:password@stock-db:5432/stock"
+    "DATABASE_URL", "postgresql://user:password@produits-db:5432/produits"
 )
 
 engine = create_engine(DATABASE_URL)

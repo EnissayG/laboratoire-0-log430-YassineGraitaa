@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 import time
+from app.models.produit import Produit
 
 from app.db.database import get_session
 from app.schemas import ProduitUpdate
@@ -11,6 +12,7 @@ from app.services.produit_service import (
     rechercher_produit,
     ajouter_produit,
     modifier_produit,
+    afficher_tout_le_stock,
 )
 
 router = APIRouter(prefix="/api/produits", tags=["Produits"])
@@ -91,7 +93,12 @@ def ajouter(
     magasin_id: int,
     session: Session = Depends(get_session),
 ):
-    return ajouter_produit(nom, categorie, prix, quantite_stock, magasin_id, session)
+    try:
+        return ajouter_produit(
+            nom, categorie, prix, quantite_stock, magasin_id, session
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.put(
@@ -108,3 +115,25 @@ def update_produit(
     if not updated:
         raise HTTPException(status_code=404, detail="Produit non trouvé")
     return updated
+
+
+@router.put(
+    "/{produit_id}/decrementer_stock",
+    summary="Décrémenter le stock d’un produit",
+    description="Soustrait une quantité du stock d’un produit.",
+)
+def decrementer_stock(
+    produit_id: int,
+    quantite: int,
+    session: Session = Depends(get_session),
+):
+    produit = session.get(Produit, produit_id)
+    if not produit:
+        raise HTTPException(status_code=404, detail="Produit non trouvé")
+
+    if produit.quantite_stock < quantite:
+        raise HTTPException(status_code=400, detail="Stock insuffisant")
+
+    produit.quantite_stock -= quantite
+    session.commit()
+    return {"message": "Stock décrémenté avec succès"}

@@ -2,7 +2,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from datetime import datetime
 from sqlalchemy import func, cast, Date
-
+import httpx
+import os
 from app.models.produit import Produit
 from app.models.vente import Vente
 from app.models.lignevente import LigneVente
@@ -10,6 +11,33 @@ from app.models.magasin import Magasin
 
 # Cache local (valide tant que l'app tourne)
 _cached_rapport = None
+
+MAGASIN_SERVICE_URL = os.getenv("MAGASIN_SERVICE_URL", "http://magasin-service:8000")
+PRODUIT_SERVICE_URL = os.getenv("PRODUIT_SERVICE_URL", "http://produits-service:8000")
+
+
+def verifier_magasin_existe(magasin_id: int) -> bool:
+    try:
+        r = httpx.get(f"{MAGASIN_SERVICE_URL}/api/magasins/{magasin_id}", timeout=5)
+        return r.status_code == 200
+    except httpx.RequestError as e:
+        print(f"❌ Erreur réseau avec magasin-service : {e}")
+        return False
+
+
+def obtenir_produit(produit_id: int):
+    try:
+        r = httpx.get(
+            f"{PRODUIT_SERVICE_URL}/api/produits/recherche?critere={produit_id}",
+            timeout=5,
+        )
+        if r.status_code == 200:
+            data = r.json()
+            return data[0] if data else None
+        return None
+    except httpx.RequestError as e:
+        print(f"❌ Erreur réseau avec produit-service : {e}")
+        return None
 
 
 def reset_cache_rapport():
@@ -28,26 +56,40 @@ def enregistrer_vente(
         lignes = []
 
         magasin = session.get(Magasin, magasin_id)
-        if not magasin:
+        if not verifier_magasin_existe(magasin_id):
             raise ValueError(f"Magasin ID {magasin_id} introuvable.")
 
         for item in produits_selectionnes:
-            produit = session.get(Produit, item["produit_id"])
-            quantite = item["quantite"]
-
-            if not produit:
+            produit_data = obtenir_produit(item["produit_id"])
+            if not produit_data:
                 raise ValueError(f"Produit ID {item['produit_id']} introuvable.")
-            if produit.quantite_stock < quantite:
-                raise ValueError(f"Stock insuffisant pour {produit.nom}.")
 
-            sous_total = quantite * produit.prix
+            quantite = item["quantite"]
+            if produit_data["quantite_stock"] < quantite:
+                raise ValueError(f"Stock insuffisant pour {produit_data['nom']}.")
+
+            sous_total = quantite * produit_data["prix"]
             total += sous_total
 
             ligne = LigneVente(
-                produit_id=produit.id, quantite=quantite, sous_total=sous_total
+                produit_id=produit_data["id"],
+                quantite=quantite,
+                sous_total=sous_total,
             )
             lignes.append(ligne)
-            produit.quantite_stock -= quantite
+            try:
+                r = httpx.put(
+                    f"{PRODUIT_SERVICE_URL}/api/produits/{produit_data['id']}/decrementer_stock",
+                    params={"quantite": quantite},
+                    timeout=5,
+                )
+                if r.status_code != 200:
+                    raise ValueError(
+                        f"Erreur lors de la décrémentation du stock : {r.text}"
+                    )
+            except httpx.RequestError as e:
+                print(f"❌ Erreur HTTP pour décrémenter stock : {e}")
+                raise ValueError("Erreur réseau lors de la mise à jour du stock")
 
         vente = Vente(
             date=(

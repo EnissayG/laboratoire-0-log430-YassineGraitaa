@@ -9,6 +9,7 @@ from app.services.magasin_service import (
     maj_magasin,
     supprimer_magasin,
     get_stock_du_magasin,
+    trouver_magasin_par_id,
 )
 from typing import List
 
@@ -64,3 +65,16 @@ def delete_magasin(id: int, db: Session = Depends(get_session)):
     if not supprimer_magasin(id, db):
         raise HTTPException(status_code=404, detail="Magasin introuvable")
     return {"message": "Magasin supprimé"}
+
+
+@router.get(
+    "/{id}",
+    response_model=MagasinDTO,
+    summary="Obtenir un magasin par ID",
+    description="Retourne les informations d’un magasin spécifique à partir de son ID.",
+)
+def get_magasin_par_id(id: int, db: Session = Depends(get_session)):
+    magasin = trouver_magasin_par_id(id, db)
+    if not magasin:
+        raise HTTPException(status_code=404, detail="Magasin introuvable")
+    return magasin

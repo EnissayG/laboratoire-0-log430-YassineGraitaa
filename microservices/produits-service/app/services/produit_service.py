@@ -1,6 +1,8 @@
-from sqlalchemy import or_
+import httpx
 from sqlalchemy.orm import Session
 from app.models.produit import Produit
+
+MAGASIN_SERVICE_URL = "http://magasin-service:8000/api/magasins"
 
 
 def afficher_tout_le_stock(session):
@@ -8,6 +10,16 @@ def afficher_tout_le_stock(session):
 
 
 def ajouter_produit(nom, categorie, prix, quantite_stock, magasin_id, db: Session):
+    # 🔎 Vérifier que le magasin existe
+    try:
+        r = httpx.get(f"{MAGASIN_SERVICE_URL}/{magasin_id}")
+        if r.status_code != 200:
+            raise ValueError(f"Magasin ID {magasin_id} introuvable.")
+    except httpx.RequestError as e:
+        print("❌ Erreur réseau avec magasin-service :", e)
+        raise ValueError("Service magasin indisponible")
+
+    # ✅ Créer le produit
     produit = Produit(
         nom=nom,
         categorie=categorie,

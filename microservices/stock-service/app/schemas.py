@@ -5,8 +5,9 @@ class ProduitStockDTO(BaseModel):
     id: int
     nom: str
     categorie: str
-    quantite_stock: int
     prix: float
+    quantite_stock: int
+    magasin_id: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True

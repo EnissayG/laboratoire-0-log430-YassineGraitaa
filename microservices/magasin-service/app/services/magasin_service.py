@@ -3,6 +3,10 @@ from app.models.magasin import Magasin
 from app.models.produit import Produit
 
 
+def trouver_magasin_par_id(id: int, db: Session) -> Magasin | None:
+    return db.get(Magasin, id)
+
+
 def creer_magasin(data: dict, db: Session) -> Magasin:
     try:
         if db.query(Magasin).filter_by(nom=data["nom"]).first():

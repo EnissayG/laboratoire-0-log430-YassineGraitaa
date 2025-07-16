@@ -75,18 +75,6 @@ services:
       - produits-db
 
   # 🔄 Base de données du microservice Stock
-  stock-db:
-    image: postgres:15
-    container_name: stock-postgres
-    restart: always
-    environment:
-      POSTGRES_DB: stock
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    ports:
-      - "5434:5432"
-    volumes:
-      - stock-data:/var/lib/postgresql/data
 
   # 🍱 Microservice Stock
   stock-service:
@@ -96,9 +84,9 @@ services:
     ports:
       - "8021:8000"
     environment:
-      DATABASE_URL: postgresql://user:password@stock-db:5432/stock
+      - DATABASE_URL=postgresql://user:password@produits-db:5432/produits
     depends_on:
-      - stock-db
+      - produits-db
 
   # 🔄 Base de données du microservice Vente
   ventes-db:

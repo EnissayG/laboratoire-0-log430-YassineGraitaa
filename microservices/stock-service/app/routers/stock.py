@@ -1,16 +1,15 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_session
-from app.services.stock_service import lister_stock
+from app.services.stock_service import lister_stock, lister_stock_du_magasin
 from app.schemas import ProduitStockDTO
 from typing import List
 import time
 
 router = APIRouter(prefix="/api/stock", tags=["Stock"])
 
-# 🧠 Cache mémoire local simple
 _stock_cache = {"data": None, "timestamp": 0}
-CACHE_DURATION_SECONDS = 60  # durée de vie du cache (1 min)
+CACHE_DURATION_SECONDS = 60
 
 
 @router.get(
@@ -21,13 +20,23 @@ CACHE_DURATION_SECONDS = 60  # durée de vie du cache (1 min)
 )
 def get_stock(db: Session = Depends(get_session)):
     now = time.time()
-
-    # ⚡ Retourne les données du cache si elles sont encore valides
     if now - _stock_cache["timestamp"] < CACHE_DURATION_SECONDS:
         return _stock_cache["data"]
 
-    # 🛠️ Sinon, génère et met en cache
     result = lister_stock(db)
     _stock_cache["data"] = result
     _stock_cache["timestamp"] = now
+    return result
+
+
+@router.get(
+    "/magasin/{magasin_id}",
+    response_model=List[ProduitStockDTO],
+    summary="Stock par magasin",
+    description="Retourne les produits et quantités pour un magasin donné.",
+)
+def get_stock_magasin(magasin_id: int, db: Session = Depends(get_session)):
+    result = lister_stock_du_magasin(magasin_id, db)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Magasin introuvable")
     return result

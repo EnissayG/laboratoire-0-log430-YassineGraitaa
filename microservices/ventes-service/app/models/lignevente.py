@@ -6,14 +6,12 @@ from app.db.database import Base
 class LigneVente(Base):
     __tablename__ = "lignes_vente"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     vente_id = Column(Integer, ForeignKey("ventes.id"))
-    produit_id = Column(Integer, ForeignKey("produits.id"))
-    quantite = Column(Integer, nullable=False)
-    sous_total = Column(Float, nullable=False)
+    produit_id = Column(
+        Integer
+    )  # ici aussi, pas besoin de ForeignKey si le produit vient d'un autre microservice
+    quantite = Column(Integer)
+    sous_total = Column(Float)
 
     vente = relationship("Vente", back_populates="lignes")
-    produit = relationship("Produit")  # ⚠️ Produit doit exister localement
-
-    def __repr__(self):
-        return f"<LigneVente(vente_id={self.vente_id}, produit_id={self.produit_id}, quantite={self.quantite})>"
