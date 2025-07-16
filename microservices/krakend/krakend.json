@@ -1,0 +1,111 @@
+{
+  "version": 3,
+  "name": "krakend-gateway",
+  "port": 8080,
+  "timeout": "3000ms",
+  "extra_config": {
+    "github_com/devopsfaith/krakend-cors": {
+      "allow_origins": ["*"],
+      "allow_methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "allow_headers": ["Content-Type", "Authorization"]
+    }
+  },
+  "endpoints": [
+    {
+      "endpoint": "/api/produits",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "/api/produits",
+          "host": ["http://produits-service:8000"],
+          "is_collection": true,
+          "disable_host_sanitize": true
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/produits/recherche",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "/api/produits/recherche",
+          "host": ["http://produits-service:8000"],
+          "is_collection": true,
+          "disable_host_sanitize": true
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/magasins",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "/api/magasins",
+          "host": ["http://magasin-service:8000"],
+          "is_collection": true,
+          "disable_host_sanitize": true
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/stock",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "/api/stock",
+          "host": ["http://stock-service:8000"],
+          "is_collection": true,
+          "disable_host_sanitize": true
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/ventes",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "/api/ventes",
+          "host": ["http://ventes-service:8000"],
+          "is_collection": true,
+          "disable_host_sanitize": true
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/clients",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "/api/clients",
+          "host": ["http://client-service:8000"],
+          "is_collection": true,
+          "disable_host_sanitize": true
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/panier",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "/api/panier",
+          "host": ["http://panier-service:8000"],
+          "is_collection": true,
+          "disable_host_sanitize": true
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/checkout",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "/api/checkout",
+          "host": ["http://checkout-service:8000"],
+          "is_collection": true,
+          "disable_host_sanitize": true
+        }
+      ]
+    }
+  ]
+}

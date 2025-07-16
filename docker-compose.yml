@@ -140,9 +140,116 @@ services:
     depends_on:
       - magasin-db
 
+
+  client-db:
+    image: postgres:15
+    container_name: client-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: clients
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5437:5432"
+    volumes:
+      - client-data:/var/lib/postgresql/data
+
+  client-service:
+    build:
+      context: ./microservices/client-service
+    container_name: client-service
+    ports:
+      - "8024:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@client-db:5432/clients
+    depends_on:
+      - client-db
+
+  # 🔄 Base de données du microservice Panier
+  panier-db:
+    image: postgres:15
+    container_name: panier-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: panier
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5438:5432"
+    volumes:
+      - panier-data:/var/lib/postgresql/data
+
+  # 🛒 Microservice Panier
+  panier-service:
+    build:
+      context: ./microservices/panier-service
+    container_name: panier-service
+    ports:
+      - "8025:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@panier-db:5432/panier
+    depends_on:
+      - panier-db
+
+
+  # 🔄 Base de données du microservice Checkout
+  checkout-db:
+    image: postgres:15
+    container_name: checkout-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: checkout
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5439:5432"
+    volumes:
+      - checkout-data:/var/lib/postgresql/data
+
+  # ✅ Microservice de validation de commande (Checkout)
+  checkout-service:
+    build:
+      context: ./microservices/checkout-service
+    container_name: checkout-service
+    ports:
+      - "8026:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@checkout-db:5432/checkout
+    depends_on:
+      - checkout-db
+  
+  gateway:
+    image: devopsfaith/krakend:2.6
+    container_name: krakend-gateway
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./microservices/krakend/krakend.json:/etc/krakend/krakend.json
+    command: ["run", "-c", "/etc/krakend/krakend.json"]
+    depends_on:
+      - produits-service
+      - magasin-service
+      - ventes-service
+      - stock-service
+      - client-service
+      - panier-service
+      - checkout-service
+
+
+
+
+
 volumes:
   postgres-data:
   produits-data:
   stock-data:
   ventes-data:
   magasin-data:
+  client-data:
+  panier-data:
+  checkout-data:
+
+
+  
+
+
