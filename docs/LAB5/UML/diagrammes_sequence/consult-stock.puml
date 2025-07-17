@@ -1,0 +1,19 @@
+@startuml
+title Diagramme de séquence – Récupération du stock (GET /api/stock)
+
+actor Utilisateur
+participant "KrakenD Gateway" as KrakenD
+participant "FastAPI\n(Router: stock.py)" as API
+participant "Service\n(stock_service.py)" as Service
+participant "DB\n(PostgreSQL via SQLAlchemy)" as DB
+
+Utilisateur -> KrakenD : GET /api/stock
+KrakenD -> API : GET /api/stock
+API -> Service : get_stock()
+Service -> DB : SELECT * FROM stock
+DB --> Service : Résultat (liste des stocks)
+Service --> API : Liste[Stock]
+API --> KrakenD : 200 OK + JSON
+KrakenD --> Utilisateur : 200 OK + JSON
+
+@enduml

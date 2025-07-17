@@ -1,0 +1,79 @@
+@startuml
+title Diagramme de classes - Vue logique du système
+
+class Produit {
+  - id: int
+  - nom: str
+  - categorie: str
+  - prix: float
+  - quantite_stock: int
+  - magasin_id: int
+}
+
+class Magasin {
+  - id: int
+  - nom: str
+  - adresse: str
+}
+
+class Stock {
+  - id: int
+  - produit_id: int
+  - quantite: int
+  - seuil_rupture: int
+}
+
+class Vente {
+  - id: int
+  - date: datetime
+  - client_id: int
+  - total: float
+}
+
+class LigneVente {
+  - id: int
+  - vente_id: int
+  - produit_id: int
+  - quantite: int
+  - prix_unitaire: float
+}
+
+class Client {
+  - id: int
+  - nom: str
+  - email: str
+}
+
+class Panier {
+  - id: int
+  - client_id: int
+}
+
+class LignePanier {
+  - id: int
+  - panier_id: int
+  - produit_id: int
+  - quantite: int
+}
+
+class Commande {
+  - id: int
+  - client_id: int
+  - date: datetime
+  - total: float
+}
+
+Produit --> Magasin : appartient à
+Stock --> Produit : concerne
+LigneVente --> Produit
+LigneVente --> Vente
+Vente --> Client
+
+Panier --> Client
+LignePanier --> Panier
+LignePanier --> Produit
+
+Commande --> Client
+Commande --> "1..*" Produit
+
+@enduml

@@ -1,0 +1,63 @@
+@startuml
+title Diagramme de déploiement - Microservices LOG430
+
+node "Docker Host" {
+  
+  node "Frontend (React)" {
+    component "log430-frontend\n:3000"
+  }
+
+  node "Gateway (Krakend)" {
+    component "krakend-gateway\n:8090"
+  }
+
+  node "Load Balancer (NGINX)" {
+    component "nginx-loadbalancer\n:8081"
+  }
+
+  node "Monolithe API (FastAPI)" {
+    component "log430-app\n:8000"
+  }
+
+  node "produits-service" {
+    component "FastAPI\n:8000"
+    database "PostgreSQL produits-db\n:5433"
+  }
+
+  node "stock-service-1" {
+    component "FastAPI\n:8000"
+  }
+
+  node "stock-service-2" {
+    component "FastAPI\n:8000"
+  }
+
+  database "PostgreSQL magasin-db\n:5436"
+  node "magasin-service" {
+    component "FastAPI\n:8000"
+  }
+
+  node "ventes-service" {
+    component "FastAPI\n:8000"
+    database "PostgreSQL ventes-db\n:5435"
+  }
+
+  node "client-service" {
+    component "FastAPI\n:8000"
+    database "PostgreSQL client-db\n:5437"
+  }
+
+  node "panier-service" {
+    component "FastAPI\n:8000"
+    database "PostgreSQL panier-db\n:5438"
+  }
+
+  node "checkout-service" {
+    component "FastAPI\n:8000"
+    database "PostgreSQL checkout-db\n:5439"
+  }
+
+  database "PostgreSQL monolith-db\n:5432"
+}
+
+@enduml

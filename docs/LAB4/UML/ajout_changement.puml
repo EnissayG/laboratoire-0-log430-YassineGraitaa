@@ -1,0 +1,93 @@
+@startuml
+' Diagramme 4+1 pour le Laboratoire 4 - Architecture Microservices avec Supervision
+' Vue logique, développement, déploiement, processus et cas d'utilisation
+
+' === VUE LOGIQUE ===
+package "Vue Logique" {
+  [FastAPI Service 1] --> [PostgreSQL]
+  [FastAPI Service 2] --> [PostgreSQL]
+  [FastAPI Service 3] --> [PostgreSQL]
+  [Nginx Load Balancer] --> [FastAPI Service 1]
+  [Nginx Load Balancer] --> [FastAPI Service 2]
+  [Nginx Load Balancer] --> [FastAPI Service 3]
+  [Frontend React] --> [Nginx Load Balancer]
+}
+
+' === VUE DE DÉVELOPPEMENT ===
+package "Vue de développement" {
+  package "Backend (FastAPI)" {
+    [routers]
+    [services]
+    [db.py]
+    [main.py]
+    [schemas.py]
+    [securite.py]
+  }
+  package "Frontend" {
+    [React Dashboard]
+  }
+  package "Infrastructure" {
+    [docker-compose.yml]
+    [prometheus.yml]
+    [nginx.conf]
+  }
+}
+
+' === VUE PHYSIQUE / DÉPLOIEMENT ===
+node "Docker Host" {
+  node "Container: fastapi1" {
+    component "FastAPI App"
+  }
+  node "Container: fastapi2" {
+    component "FastAPI App"
+  }
+  node "Container: fastapi3" {
+    component "FastAPI App"
+  }
+  node "Container: postgres" {
+    database "PostgreSQL"
+  }
+  node "Container: nginx-lb" {
+    component "Nginx Load Balancer"
+  }
+  node "Container: prometheus" {
+    component "Prometheus"
+  }
+  node "Container: grafana" {
+    component "Grafana"
+  }
+  node "Container: nginx-exporter" {
+    component "Exporter Nginx"
+  }
+}
+
+' === VUE PROCESSUS ===
+package "Vue Processus" {
+  [Client] --> [Gateway : Nginx]
+  [Gateway : Nginx] --> [FastAPI Instance 1]
+  [Gateway : Nginx] --> [FastAPI Instance 2]
+  [Gateway : Nginx] --> [FastAPI Instance 3]
+  [FastAPI Instance] --> [DB : PostgreSQL]
+  [Prometheus] --> [FastAPI Instance]
+  [Prometheus] --> [nginx-exporter]
+  [Grafana] --> [Prometheus]
+}
+
+' === VUE CAS D'UTILISATION ===
+actor Employe
+actor Client
+
+package "Cas d'utilisation" {
+  usecase "Consulter Stock" as UC1
+  usecase "Créer Vente" as UC2
+  usecase "Rapport Global" as UC3
+  usecase "Voir Performance" as UC4
+  usecase "Consulter Historique" as UC5
+
+  Employe --> UC1
+  Employe --> UC2
+  Employe --> UC3
+  Client --> UC1
+  Client --> UC5
+}
+@enduml

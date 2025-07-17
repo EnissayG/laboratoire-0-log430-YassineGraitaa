@@ -12,12 +12,24 @@
     "github_com/devopsfaith/krakend/logging": {
       "level": "DEBUG",
       "prefix": "[GATEWAY-LOG]"
+    },
+    "github_com/devopsfaith/krakend-ratelimit": {
+      "max_rate": 20,
+      "client_max_rate": 5,
+      "strategy": "ip"
     }
   },
   "endpoints": [
     {
       "endpoint": "/api/produits",
       "method": "GET",
+      "extra_config": {
+        "github_com/devopsfaith/krakend-ratelimit/juju/router": {
+          "maxRate": 10,
+          "clientMaxRate": 3,
+          "strategy": "ip"
+        }
+      },
       "backend": [
         {
           "url_pattern": "/api/produits",
@@ -30,6 +42,13 @@
     {
       "endpoint": "/api/produits/recherche",
       "method": "GET",
+      "extra_config": {
+        "github_com/devopsfaith/krakend-ratelimit/juju/router": {
+          "maxRate": 5,
+          "clientMaxRate": 2,
+          "strategy": "ip"
+        }
+      },
       "backend": [
         {
           "url_pattern": "/api/produits/recherche",
@@ -40,24 +59,33 @@
       ]
     },
     {
+      "endpoint": "/api/stock",
+      "method": "GET",
+      "extra_config": {
+        "github_com/devopsfaith/krakend-ratelimit/juju/router": {
+          "maxRate": 8,
+          "clientMaxRate": 3,
+          "strategy": "ip"
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/stock",
+          "host": ["http://stock-service:8000"],
+          "is_collection": true,
+          "disable_host_sanitize": true
+        }
+      ]
+    },
+
+
+    {
       "endpoint": "/api/magasins",
       "method": "GET",
       "backend": [
         {
           "url_pattern": "/api/magasins",
           "host": ["http://magasin-service:8000"],
-          "is_collection": true,
-          "disable_host_sanitize": true
-        }
-      ]
-    },
-    {
-      "endpoint": "/api/stock",
-      "method": "GET",
-      "backend": [
-        {
-          "url_pattern": "/api/stock",
-          "host": ["http://stock-service:8000"],
           "is_collection": true,
           "disable_host_sanitize": true
         }

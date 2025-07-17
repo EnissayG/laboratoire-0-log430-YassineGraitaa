@@ -1,0 +1,18 @@
+@startuml
+title Diagramme de séquence – Création d’une vente (POST /api/ventes)
+
+actor Utilisateur
+participant "KrakenD Gateway" as KrakenD
+participant "FastAPI\n(ventes.py)" as API
+participant "Service\n(ventes_service.py)" as Service
+participant "DB\nPostgreSQL" as DB
+
+Utilisateur -> KrakenD : POST /api/ventes (détails vente)
+KrakenD -> API : POST /api/ventes
+API -> Service : creer_vente()
+Service -> DB : INSERT INTO ventes ...
+DB --> Service : Confirmation
+Service --> API : Vente créée
+API --> KrakenD : 201 Created + JSON
+KrakenD --> Utilisateur : 201 Created + JSON
+@enduml
