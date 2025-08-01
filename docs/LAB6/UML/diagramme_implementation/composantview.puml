@@ -1,0 +1,24 @@
+@startuml
+title Diagramme de composants – Microservice typique FastAPI
+
+package "microservice-x" {
+  [main.py] --> [router : routers/xxx.py]
+
+  package "routers" {
+    [xxx.py] --> [service : services/xxx_service.py]
+  }
+
+  package "services" {
+    [xxx_service.py] --> [model : models/xxx.py]
+    [xxx_service.py] --> [db : db/database.py]
+  }
+
+  package "models" {
+    [xxx.py] --> [schemas.py]
+  }
+
+  [schemas.py] --> [FastAPI Response]
+  [db/database.py] --> [PostgreSQL]
+}
+
+@enduml

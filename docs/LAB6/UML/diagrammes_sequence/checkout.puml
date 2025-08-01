@@ -1,0 +1,32 @@
+@startuml
+title Diagramme de séquence – Checkout / Validation de commande (POST /api/checkout)
+
+actor Utilisateur
+participant "KrakenD Gateway" as KrakenD
+participant "FastAPI\n(checkout.py)" as API
+participant "Service\n(checkout_service.py)" as CheckoutService
+participant "Service\n(panier_service.py)" as PanierService
+participant "Service\n(stock_service.py)" as StockService
+participant "DB\nPostgreSQL" as DB
+
+Utilisateur -> KrakenD : POST /api/checkout
+KrakenD -> API : POST /api/checkout
+API -> CheckoutService : valider_commande()
+
+CheckoutService -> PanierService : récupérer_panier()
+PanierService -> DB : SELECT * FROM panier WHERE user_id
+DB --> PanierService : Liste[Article]
+PanierService --> CheckoutService : Panier
+
+CheckoutService -> StockService : verifier_disponibilite(Panier)
+StockService -> DB : SELECT * FROM stock WHERE produit_id
+DB --> StockService : Stocks OK
+StockService --> CheckoutService : OK
+
+CheckoutService -> DB : INSERT INTO ventes, vider panier, maj stock
+DB --> CheckoutService : Success
+
+CheckoutService --> API : Commande validée
+API --> KrakenD : 200 OK + Confirmation
+KrakenD --> Utilisateur : 200 OK + Confirmation
+@enduml

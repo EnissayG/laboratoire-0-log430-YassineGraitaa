@@ -4,6 +4,7 @@ from datetime import date
 from app.db import get_session
 from app.services.rapports_service import generer_rapport_ventes
 from app.schemas import RapportVenteDTO, RapportVenteResponse
+import time
 
 router = APIRouter(prefix="/api/rapports", tags=["Rapports"])
 

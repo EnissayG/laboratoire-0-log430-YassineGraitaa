@@ -235,6 +235,19 @@ services:
       - panier-service
       - checkout-service
 
+  # 🎯 Microservice Orchestrateur
+  orchestrateur-service:
+    build:
+      context: ./microservices/orchestrateur-service
+    container_name: orchestrateur-service
+    ports:
+      - "8027:8000"
+    depends_on:
+      - panier-service
+      - stock-service
+      - client-service
+      - ventes-service
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 
 

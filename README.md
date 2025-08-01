@@ -106,6 +106,7 @@ docker-compose -f docker-compose.observ.yml up --build
 ## 🧪 Tests de charge & tolérance
 
 - `k6 run test.js` → Simulation 100 VUs sur `/api/magasins/1/stock`
+-' python -m black .'
 - `docker stop stock-service-2` → Test de résilience
 
 Résultats observables dans Grafana : latence, erreurs, CPU, connexions.

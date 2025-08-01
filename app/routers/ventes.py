@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.securite import verifier_token
 from app.db import get_session
+import time
 from app.services.vente_service import (
     enregistrer_vente,
     annuler_vente,

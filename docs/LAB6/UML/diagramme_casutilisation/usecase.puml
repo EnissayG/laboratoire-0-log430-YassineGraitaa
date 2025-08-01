@@ -1,0 +1,46 @@
+@startuml
+title Vue des cas d'utilisation - Système Multi-Magasins
+
+left to right direction
+actor Employé
+actor Client
+
+package "Gestion Produits" {
+  usecase "Créer / Modifier\nun produit" as UC1
+  usecase "Lister les produits" as UC2
+  usecase "Rechercher produit" as UC3
+}
+
+package "Gestion Magasins" {
+  usecase "Créer un magasin" as UC4
+  usecase "Lister les magasins" as UC5
+}
+
+package "Gestion Stock" {
+  usecase "Mettre à jour le stock" as UC6
+  usecase "Consulter le stock" as UC7
+  usecase "Générer rapports" as UC8
+}
+
+package "Vente et Client" {
+  usecase "Créer un client" as UC9
+  usecase "Accéder à son panier" as UC10
+  usecase "Ajouter/Supprimer au panier" as UC11
+  usecase "Valider la commande" as UC12
+}
+
+Employé --> UC1
+Employé --> UC2
+Employé --> UC3
+Employé --> UC4
+Employé --> UC5
+Employé --> UC6
+Employé --> UC7
+Employé --> UC8
+
+Client --> UC9
+Client --> UC10
+Client --> UC11
+Client --> UC12
+
+@enduml
