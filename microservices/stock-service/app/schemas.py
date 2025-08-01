@@ -11,3 +11,13 @@ class ProduitStockDTO(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ProduitQuantite(BaseModel):
+    produit_id: int
+    quantite: int
+    prix: float
+
+
+class ReservationProduits(BaseModel):
+    produits: list[ProduitQuantite]

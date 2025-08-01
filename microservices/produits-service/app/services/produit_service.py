@@ -1,8 +1,11 @@
 import httpx
 from sqlalchemy.orm import Session
 from app.models.produit import Produit
+import os
 
-MAGASIN_SERVICE_URL = "http://magasin-service:8000/api/magasins"
+MAGASIN_SERVICE_URL = os.getenv(
+    "MAGASIN_SERVICE_URL", "http://magasin-service:8000/api/magasins"
+)
 
 
 def afficher_tout_le_stock(session):

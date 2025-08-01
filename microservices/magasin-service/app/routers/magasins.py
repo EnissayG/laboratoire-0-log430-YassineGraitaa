@@ -67,14 +67,9 @@ def delete_magasin(id: int, db: Session = Depends(get_session)):
     return {"message": "Magasin supprimé"}
 
 
-@router.get(
-    "/{id}",
-    response_model=MagasinDTO,
-    summary="Obtenir un magasin par ID",
-    description="Retourne les informations d’un magasin spécifique à partir de son ID.",
-)
-def get_magasin_par_id(id: int, db: Session = Depends(get_session)):
-    magasin = trouver_magasin_par_id(id, db)
+@router.get("/{magasin_id}", response_model=MagasinDTO)
+def get_magasin_par_id(magasin_id: int, db: Session = Depends(get_session)):
+    magasin = trouver_magasin_par_id(magasin_id, db)
     if not magasin:
         raise HTTPException(status_code=404, detail="Magasin introuvable")
     return magasin

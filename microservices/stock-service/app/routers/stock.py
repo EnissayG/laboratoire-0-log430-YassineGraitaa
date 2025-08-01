@@ -1,7 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_session
-from app.services.stock_service import lister_stock, lister_stock_du_magasin
+from app.db.database import get_db
+from app.services.stock_service import (
+    lister_stock,
+    lister_stock_du_magasin,
+    reserver_produits,
+    liberer_produits,
+)
+from app.schemas import ReservationProduits
 from app.schemas import ProduitStockDTO
 from typing import List
 import time
@@ -40,3 +47,23 @@ def get_stock_magasin(magasin_id: int, db: Session = Depends(get_session)):
     if result is None:
         raise HTTPException(status_code=404, detail="Magasin introuvable")
     return result
+
+
+@router.post("/reserver")
+def reserver_stock(payload: ReservationProduits, db: Session = Depends(get_db)):
+    try:
+        success = reserver_produits(payload.produits, db)
+        if not success:
+            raise HTTPException(status_code=400, detail="Stock insuffisant")
+        return {"message": "Stock réservé"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/liberer")
+def liberer_stock(payload: ReservationProduits, db: Session = Depends(get_db)):
+    try:
+        liberer_produits(payload.produits, db)
+        return {"message": "Stock libéré"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -12,3 +12,7 @@ class ClientDTO(ClientCreate):
 
     class Config:
         orm_mode = True
+
+
+class Paiement(BaseModel):
+    montant: float

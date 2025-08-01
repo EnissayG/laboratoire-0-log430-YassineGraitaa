@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_session
+from app.schemas import ProduitQuantite, VenteInput
 import time
 from app.services.vente_service import (
     enregistrer_vente,
@@ -104,3 +105,17 @@ def supprimer_vente(vente_id: int, session: Session = Depends(get_session)):
             status_code=404, detail="Vente introuvable ou déjà annulée."
         )
     return {"message": "Vente annulée"}
+
+
+@router.post("", status_code=201)
+def creer_vente(vente: VenteInput, db: Session = Depends(get_db)):
+    resultat = enregistrer_vente(
+        produits_selectionnes=[p.dict() for p in vente.produits],
+        magasin_id=vente.magasin_id,
+        session=db,
+    )
+    if not resultat:
+        raise HTTPException(
+            status_code=400, detail="Erreur lors de la création de la vente"
+        )
+    return {"message": "Vente enregistrée", "id": resultat.id}

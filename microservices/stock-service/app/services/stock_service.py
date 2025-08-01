@@ -23,3 +23,23 @@ def lister_stock_du_magasin(magasin_id: int, db: Session):
     if not magasin_existe(magasin_id):
         return None
     return db.query(Produit).filter(Produit.magasin_id == magasin_id).all()
+
+
+def reserver_produits(produits: list[dict], db: Session) -> bool:
+    for item in produits:
+        produit = db.get(Produit, item["produit_id"])
+        if not produit or produit.quantite_stock < item["quantite"]:
+            return False
+    for item in produits:
+        produit = db.get(Produit, item["produit_id"])
+        produit.quantite_stock -= item["quantite"]
+    db.commit()
+    return True
+
+
+def liberer_produits(produits: list[dict], db: Session):
+    for item in produits:
+        produit = db.get(Produit, item["produit_id"])
+        if produit:
+            produit.quantite_stock += item["quantite"]
+    db.commit()

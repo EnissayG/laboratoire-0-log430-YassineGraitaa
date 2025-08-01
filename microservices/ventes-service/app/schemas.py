@@ -62,3 +62,15 @@ class PerformanceGlobaleDTO(BaseModel):
     surstocks: List[ProduitSimpleDTO]
     ventes_par_magasin: List[VentesParMagasinDTO]
     tendance_journaliere: List[TendanceJourDTO]
+
+
+class ProduitQuantite(BaseModel):
+    produit_id: int
+    quantite: int
+    prix: float
+
+
+class VenteInput(BaseModel):
+    client_id: int
+    magasin_id: int
+    produits: list[ProduitQuantite]

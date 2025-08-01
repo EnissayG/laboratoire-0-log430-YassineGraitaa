@@ -1,3 +1,5 @@
+# Fichier : produits-service/app/models/produit.py
+
 from sqlalchemy import Column, Integer, String, Float
 from app.db.database import Base
 
@@ -10,6 +12,4 @@ class Produit(Base):
     categorie = Column(String, nullable=False)
     prix = Column(Float, nullable=False)
     quantite_stock = Column(Integer, nullable=False)
-    magasin_id = Column(
-        Integer
-    )  # laissé tel quel, mais sans ForeignKey ni relationship
+    magasin_id = Column(Integer, nullable=False)  # 💡 Juste un champ entier

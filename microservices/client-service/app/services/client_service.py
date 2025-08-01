@@ -16,3 +16,19 @@ def get_client(id: int, db: Session) -> Client | None:
 
 def lister_clients(db: Session):
     return db.query(Client).all()
+
+
+def payer_client(client_id: int, montant: float, db: Session) -> bool:
+    client = db.get(Client, client_id)
+    if not client or client.solde < montant:
+        return False
+    client.solde -= montant
+    db.commit()
+    return True
+
+
+def rembourser_client(client_id: int, montant: float, db: Session):
+    client = db.get(Client, client_id)
+    if client:
+        client.solde += montant
+        db.commit()
