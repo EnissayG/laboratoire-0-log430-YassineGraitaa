@@ -12,13 +12,35 @@ scrape_configs:
     static_configs:
       - targets: ['nginx-exporter:9113']
 
-  - job_name: 'stock-service-1'
-    metrics_path: /metrics
+  - job_name: 'produits-service'
     static_configs:
-      - targets: ['stock-service-1:8000']
+      - targets: ['host.docker.internal:8020']
 
-  - job_name: 'stock-service-2'
-    metrics_path: /metrics
+  - job_name: 'stock-service'
     static_configs:
-      - targets: ['stock-service-2:8000']
+      - targets: ['host.docker.internal:8021']
+
+  - job_name: 'ventes-service'
+    static_configs:
+      - targets: ['host.docker.internal:8022']
+
+  - job_name: 'magasin-service'
+    static_configs:
+      - targets: ['host.docker.internal:8023']
+
+  - job_name: 'client-service'
+    static_configs:
+      - targets: ['host.docker.internal:8024']
+
+  - job_name: 'panier-service'
+    static_configs:
+      - targets: ['host.docker.internal:8025']
+
+  - job_name: 'checkout-service'
+    static_configs:
+      - targets: ['host.docker.internal:8026']
+
+  - job_name: 'orchestrateur-service'
+    static_configs:
+      - targets: ['host.docker.internal:8027']
 

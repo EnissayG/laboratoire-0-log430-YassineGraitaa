@@ -11,3 +11,6 @@ Instrumentator().instrument(app).expose(app)
 @app.get("/")
 def ping():
     return {"message": "Orchestrateur opérationnel"}
+
+
+Instrumentator().instrument(app).expose(app)

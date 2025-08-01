@@ -10,6 +10,4 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Stock Service", version="1.0")
 app.include_router(stock.router)
-instrumentator = Instrumentator()
-instrumentator.instrument(app)
-instrumentator.expose(app)
+Instrumentator().instrument(app).expose(app)
