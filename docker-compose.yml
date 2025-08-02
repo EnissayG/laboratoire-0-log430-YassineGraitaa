@@ -271,6 +271,37 @@ services:
     ports:
       - "6379:6379"
 
+  event-store-db:
+    image: postgres:15
+    container_name: event-store-db
+    restart: always
+    environment:
+      POSTGRES_DB: eventstore
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5441:5432"
+    volumes:
+      - event-store-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  event-store:
+    build:
+      context: ./microservices/event-store
+    container_name: event-store
+    depends_on:
+      event-store-db:
+          condition: service_healthy
+    ports:
+      - "8028:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@event-store-db:5432/eventstore
+
 
 
 volumes:
@@ -283,6 +314,8 @@ volumes:
   panier-data:
   checkout-data:
   orchestrateur-data:
+  event-store-data:
+
 
 
   

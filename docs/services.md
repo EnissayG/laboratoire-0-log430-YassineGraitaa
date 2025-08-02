@@ -16,6 +16,7 @@
 | 9090    | Prometheus           | [http://localhost:9090](http://localhost:9090)           | Monitoring Prometheus                |
 | 9113    | NGINX Exporter       | [http://localhost:9113/metrics](http://localhost:9113/metrics) | Exportateur Prometheus (NGINX)  |
 | 3009    | Grafana              | [http://localhost:3009](http://localhost:3009)           | Dashboard Grafana                    |
+| 8028    | Eventstore              | [http://localhost:8028/docs](http://localhost:8028/docs)          | Event store                   |
 
 
 
