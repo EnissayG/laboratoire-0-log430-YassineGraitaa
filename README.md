@@ -1,11 +1,8 @@
-
-# LOG430 – Laboratoire 1, 2, 3, 4 & 5 : Système de caisse distribué observé 🧾🔁📊
+# LOG430 – Laboratoire 1 à 6 : Système de caisse distribué observé 🧾🔁📊
 
 ## 🧩 Description du projet
 
-Ce projet évolue d’une application **console (Lab 1)** vers une **architecture 3-tier distribuée (Lab 2)**, une **API RESTful avancée (Lab 3)**, une **infrastructure scalable avec monitoring et tolérance aux pannes (Lab 4)**, et enfin une **architecture microservices avec API Gateway, Load Balancer et Observabilité (Lab 5)**.
-
-Développé dans le cadre du cours **LOG430 – Architecture Logicielle (Été 2025)** à l’ÉTS.
+Ce projet suit l'évolution progressive d'un système de caisse initialement local vers une architecture distribuée et observable, en passant par une API REST, une scalabilité complète et une orchestration de processus critiques via une saga. Il est réalisé dans le cadre du cours **LOG430 – Architecture Logicielle (Été 2025)** à l’ÉTS.
 
 ---
 
@@ -34,7 +31,7 @@ Développé dans le cadre du cours **LOG430 – Architecture Logicielle (Été 2
 - ⚡ Cache LRU sur `/performance/global`
 
 ### Lab 4 – Observabilité & Scalabilité
-- 🧭 Load Balancer (NGINX) avec 3 stratégies comparées :
+- 🧭 Load Balancer (NGINX) avec 3 stratégies :
   - Round Robin
   - Least Connections
   - IP Hash
@@ -43,16 +40,23 @@ Développé dans le cadre du cours **LOG430 – Architecture Logicielle (Été 2
   - Grafana (latence, trafic, erreurs, CPU, connexions)
 - 🧪 Test de charge avec **K6**
 - ⚠️ Test de tolérance aux pannes (instances down)
-- ⚡ Impact du cache observé en live via métriques
+- ⚡ Impact du cache observé via métriques live
 
 ### Lab 5 – Microservices, Gateway et Résilience
 - 🚀 Microservices découpés par domaine (produits, ventes, stock, panier, clients...)
 - 🌐 API Gateway KrakenD : centralisation et routage
 - 🔐 CORS, throttling global (max_rate)
 - 🧪 Tests de charge avec K6 (jusqu’à 100 VUs)
-- 📊 Comparaison directe architecture monolithe vs microservices
-- ✅ NGINX + plusieurs instances stock-service
+- ✅ Réplication `stock-service`
 - ⚠️ Simulation de pannes / tolérance validée
+
+### Lab 6 – Saga orchestrée et machine d’état
+- 🤖 Implémentation d'une **saga orchestrée synchrone**
+- 🧠 Gestion explicite de l'état (`EtatCommande`)
+- 💾 Persistance des transitions (`EtatSaga`)
+- ♻️ Rollback automatiques (stock, paiement, vente)
+- 📊 Métriques Prometheus : états de commande
+- 🧪 Tests Postman avec scénarios d’échec simulés
 
 ---
 
@@ -63,17 +67,18 @@ Développé dans le cadre du cours **LOG430 – Architecture Logicielle (Été 2
 ├── microservices/
 │   ├── produits-service/
 │   ├── ventes-service/
-│   ├── stock-service/      # Répliqué en plusieurs instances
+│   ├── stock-service/
 │   ├── client-service/
 │   ├── panier-service/
 │   ├── checkout-service/
-│   └── krakend/            # Fichier krakend.json
-├── frontend/dashboard/     # React dashboard
-├── nginx/                  # nginx.conf + exporters
-├── prometheus/             # prometheus.yml
-├── test.js                 # Script de charge K6
-├── docker-compose.yml      # Compose principal
-├── docker-compose.observ.yml # Compose Prometheus + Grafana
+│   ├── orchestrateur-service/
+│   └── krakend/
+├── frontend/dashboard/
+├── nginx/
+├── prometheus/
+├── test.js
+├── docker-compose.yml
+├── docker-compose.observ.yml
 └── README.md
 ```
 
@@ -106,23 +111,32 @@ docker-compose -f docker-compose.observ.yml up --build
 ## 🧪 Tests de charge & tolérance
 
 - `k6 run test.js` → Simulation 100 VUs sur `/api/magasins/1/stock`
--' python -m black .'
 - `docker stop stock-service-2` → Test de résilience
+- Résultats visibles sur Grafana
 
-Résultats observables dans Grafana : latence, erreurs, CPU, connexions.
+### Tests Postman pour la saga orchestrée (Lab 6)
+
+1. Importer `saga_checkout_tests.postman_collection.json` dans Postman
+2. Lancer les cas suivants :
+   - ✅ client_id: 4 → succès complet
+   - ❌ client_id: 1 → échec stock
+   - ❌ client_id: 2 → échec paiement
+   - ❌ client_id: 3 → échec enregistrement vente
+
+Chaque test déclenche un scénario complet avec journalisation et rollback.
 
 ---
 
 ## 🧠 Recommandations finales
 
-| Aspect | Amélioration |
-|--------|--------------|
-| SQL    | Indexation, requêtes optimisées |
-| Cache  | fastapi-cache2 sur endpoints agrégés |
-| Scalabilité | Load balancing horizontal efficace |
-| Observabilité | Grafana prêt à l’emploi avec panels |
-| Sécurité | Authentification simple par token + throttling |
-| CI/CD  | GitHub Actions (tests, build, format) |
+| Aspect       | Amélioration                                   |
+|--------------|------------------------------------------------|
+| SQL          | Indexation + analyse EXPLAIN                   |
+| Cache        | fastapi-cache2 pour les agrégats               |
+| Résilience   | Automatiser les rollbacks                      |
+| Observabilité| Plus de métriques métier                       |
+| Sécurité     | Gestion de rôles + authentification centralisée|
+| CI/CD        | GitHub Actions (tests, lint, build, push)      |
 
 ---
 
@@ -130,4 +144,4 @@ Résultats observables dans Grafana : latence, erreurs, CPU, connexions.
 
 Projet académique – ÉTS 2025  
 Développé par **Yassine Graitaa** – LOG430  
-📅 Dernière mise à jour : **2025-07-16**
+📅 Dernière mise à jour : **2025-08-01**
