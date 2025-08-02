@@ -1,0 +1,19 @@
+@startuml
+title Vue de processus – Fonctionnement du Event Store
+
+participant "Microservices (stock, panier, ventes...)" as Services
+participant "event-store\n(FastAPI)" as EventStore
+database "PostgreSQL\n(event_store)" as DB
+actor Client
+
+Services -> EventStore : POST /events
+EventStore -> DB : INSERT INTO evenements
+DB --> EventStore : OK
+EventStore -> Services : 200 OK
+
+Client -> EventStore : GET /projections/{aggregate_id}
+EventStore -> DB : SELECT * FROM evenements WHERE aggregate_id = ...
+EventStore -> EventStore : Rejoue les événements (projection.py)
+EventStore -> Client : JSON de l'état courant
+
+@enduml

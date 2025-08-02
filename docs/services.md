@@ -21,3 +21,4 @@
 
 
 docker-compose -f docker-compose.yml -f docker-compose.loadbalancer.yml -f docker-compose.prometheus.yml up --build
+docker-compose -f docker-compose.prometheus.yml up --build

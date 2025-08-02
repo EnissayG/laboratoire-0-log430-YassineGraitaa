@@ -1,0 +1,13 @@
+@startuml
+package "Système Commande Distribué" {
+    [Panier Service] --> [Redis Streams] : publie CommandeCreee
+    [Redis Streams] --> [Stock Service] : consomme CommandeCreee
+    [Stock Service] --> [Redis Streams] : publie StockReserve / StockIndisponible
+    [Redis Streams] --> [Client Service] : consomme StockReserve
+    [Client Service] --> [Redis Streams] : publie PaiementAccepte / PaiementRefuse
+    [Redis Streams] --> [Ventes Service] : consomme PaiementAccepte
+    [Ventes Service] --> [Redis Streams] : publie VenteConfirmee
+    [Tous les services] --> [Event Store] : POST /events
+    [Event Store] --> [Client DevOps] : GET /projections/{id}
+}
+@enduml

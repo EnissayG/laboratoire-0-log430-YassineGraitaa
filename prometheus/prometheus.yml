@@ -44,3 +44,7 @@ scrape_configs:
     static_configs:
       - targets: ['host.docker.internal:8027']
 
+  - job_name: 'event-store'
+    static_configs:
+      - targets: ['host.docker.internal:8028']
+
