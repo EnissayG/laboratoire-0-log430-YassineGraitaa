@@ -1,0 +1,29 @@
+@startuml
+title Diagramme de séquence – Saga orchestrée : échec paiement + rollback
+
+actor Client
+participant "orchestrateur-service" as Orchestrateur
+participant "panier-service" as Panier
+participant "stock-service" as Stock
+participant "client-service" as ClientS
+database "PostgreSQL\norchestrateur-db" as DB
+
+Client -> Orchestrateur : POST /api/commande/checkout
+activate Orchestrateur
+
+Orchestrateur -> DB : Créer Commande + état INITIÉE
+Orchestrateur -> Panier : GET /paniers/client/{id}
+Panier --> Orchestrateur : [produits]
+
+Orchestrateur -> Stock : POST /stock/reserver
+Stock --> Orchestrateur : 200 OK
+Orchestrateur -> DB : Log état STOCK_RÉSERVÉ
+
+Orchestrateur -> ClientS : POST /clients/{id}/payer
+ClientS --> Orchestrateur : 500 ERREUR
+
+Orchestrateur -> Stock : POST /stock/liberer
+Orchestrateur -> DB : Log état ECHEC_PAIEMENT
+Orchestrateur --> Client : {saga_id, état_final: ECHEC_PAIEMENT}
+deactivate Orchestrateur
+@enduml

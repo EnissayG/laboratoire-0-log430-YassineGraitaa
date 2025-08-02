@@ -1,0 +1,42 @@
+@startuml
+title Vue contextuelle – Saga orchestrée LOG430
+
+actor Client
+actor Employé
+
+node "Frontend React" {
+  [UI Web]
+}
+
+node "API Gateway\n(KrakenD)" {
+  [krakend-gateway\n:8090]
+}
+
+package "Microservices applicatifs" {
+  [produits-service]
+  [stock-service]
+  [client-service]
+  [panier-service]
+  [ventes-service]
+  [magasin-service]
+  [orchestrateur-service]
+}
+
+Client --> [UI Web]
+Employé --> [UI Web]
+
+[UI Web] --> [krakend-gateway\n:8090]
+[krakend-gateway\n:8090] --> [orchestrateur-service]
+[krakend-gateway\n:8090] --> [produits-service]
+[krakend-gateway\n:8090] --> [stock-service]
+[krakend-gateway\n:8090] --> [client-service]
+[krakend-gateway\n:8090] --> [ventes-service]
+[krakend-gateway\n:8090] --> [panier-service]
+[krakend-gateway\n:8090] --> [magasin-service]
+
+[orchestrateur-service] --> [panier-service]
+[orchestrateur-service] --> [stock-service]
+[orchestrateur-service] --> [client-service]
+[orchestrateur-service] --> [ventes-service]
+
+@enduml

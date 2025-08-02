@@ -235,6 +235,19 @@ services:
       - panier-service
       - checkout-service
 
+  orchestrateur-db:
+    image: postgres:15
+    container_name: orchestrateur-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: orchestrateur
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5440:5432"
+    volumes:
+      - orchestrateur-data:/var/lib/postgresql/data
+
   # 🎯 Microservice Orchestrateur
   orchestrateur-service:
     build:
@@ -243,11 +256,15 @@ services:
     ports:
       - "8027:8000"
     depends_on:
+      - orchestrateur-db       # ✅ Ajout pour la dépendance BDD
       - panier-service
       - stock-service
       - client-service
       - ventes-service
+    environment:
+      - DATABASE_URL=postgresql://user:password@orchestrateur-db:5432/orchestrateur
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
 
 
 
@@ -261,6 +278,7 @@ volumes:
   client-data:
   panier-data:
   checkout-data:
+  orchestrateur-data:
 
 
   

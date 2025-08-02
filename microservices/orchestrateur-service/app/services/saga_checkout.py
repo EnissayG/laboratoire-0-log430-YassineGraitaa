@@ -1,47 +1,73 @@
+import uuid
 import httpx
-from app.models.commande_saga import CommandeInput, EtatCommande
+from sqlalchemy.orm import Session
+from app.db.database import get_session
+from app.schemas import CommandeInput
+from app.models.etat_commande_enum import EtatCommande
+from app.services.etat_commande import changer_etat_commande
 
 
-async def executer_saga(commande: CommandeInput) -> EtatCommande:
-    etat = EtatCommande.INITIEE
+async def executer_saga(commande: CommandeInput) -> dict:
+    saga_id = uuid.uuid4()
+
+    with next(get_session()) as db:
+        changer_etat_commande(
+            db, saga_id, EtatCommande.INITIEE, commande.client_id, commande.magasin_id
+        )
+
     try:
         async with httpx.AsyncClient() as client:
-
-            # 1️⃣ Récupérer le panier du client
-            panier_resp = await client.get(
+            panier = await client.get(
                 f"http://panier-service:8000/api/paniers/client/{commande.client_id}"
             )
-            if panier_resp.status_code != 200:
-                return EtatCommande.ECHEC_STOCK
-            produits = panier_resp.json()
-            if not produits:
-                return EtatCommande.ECHEC_STOCK
+            if panier.status_code != 200:
+                with next(get_session()) as db:
+                    changer_etat_commande(db, saga_id, EtatCommande.ECHEC_STOCK)
+                return {
+                    "saga_id": str(saga_id),
+                    "etat_final": EtatCommande.ECHEC_STOCK.value,
+                }
 
-            # 2️⃣ Réserver les produits
+            produits = panier.json()
+
+            # Réservation
             res = await client.post(
                 "http://stock-service:8000/api/stock/reserver",
                 json={"produits": produits},
             )
             if res.status_code != 200:
-                return EtatCommande.ECHEC_STOCK
-            etat = EtatCommande.STOCK_RESERVE
+                with next(get_session()) as db:
+                    changer_etat_commande(db, saga_id, EtatCommande.ECHEC_STOCK)
+                return {
+                    "saga_id": str(saga_id),
+                    "etat_final": EtatCommande.ECHEC_STOCK.value,
+                }
 
-            # 3️⃣ Débiter le client
+            with next(get_session()) as db:
+                changer_etat_commande(db, saga_id, EtatCommande.STOCK_RESERVE)
+
+            # Paiement
             total = sum(p["quantite"] * p["prix"] for p in produits)
-            paiement = await client.post(
+            pay = await client.post(
                 f"http://client-service:8000/api/clients/{commande.client_id}/payer",
                 json={"montant": total},
             )
-            if paiement.status_code != 200:
-                # rollback stock
+            if pay.status_code != 200:
                 await client.post(
                     "http://stock-service:8000/api/stock/liberer",
                     json={"produits": produits},
                 )
-                return EtatCommande.ECHEC_PAIEMENT
-            etat = EtatCommande.PAIEMENT_EFFECTUE
+                with next(get_session()) as db:
+                    changer_etat_commande(db, saga_id, EtatCommande.ECHEC_PAIEMENT)
+                return {
+                    "saga_id": str(saga_id),
+                    "etat_final": EtatCommande.ECHEC_PAIEMENT.value,
+                }
 
-            # 4️⃣ Enregistrer la commande (vente)
+            with next(get_session()) as db:
+                changer_etat_commande(db, saga_id, EtatCommande.PAIEMENT_EFFECTUE)
+
+            # Vente
             vente = await client.post(
                 "http://ventes-service:8000/api/ventes",
                 json={
@@ -51,7 +77,6 @@ async def executer_saga(commande: CommandeInput) -> EtatCommande:
                 },
             )
             if vente.status_code != 201:
-                # rollback paiement + stock
                 await client.post(
                     f"http://client-service:8000/api/clients/{commande.client_id}/rembourser",
                     json={"montant": total},
@@ -60,11 +85,25 @@ async def executer_saga(commande: CommandeInput) -> EtatCommande:
                     "http://stock-service:8000/api/stock/liberer",
                     json={"produits": produits},
                 )
-                return EtatCommande.ECHEC_ENREGISTREMENT
+                with next(get_session()) as db:
+                    changer_etat_commande(
+                        db, saga_id, EtatCommande.ECHEC_ENREGISTREMENT
+                    )
+                return {
+                    "saga_id": str(saga_id),
+                    "etat_final": EtatCommande.ECHEC_ENREGISTREMENT.value,
+                }
 
-            etat = EtatCommande.CONFIRMEE
-            return etat
+            with next(get_session()) as db:
+                changer_etat_commande(db, saga_id, EtatCommande.CONFIRMEE)
+
+            return {"saga_id": str(saga_id), "etat_final": EtatCommande.CONFIRMEE.value}
 
     except Exception as e:
-        print(f"❌ Erreur critique orchestrateur : {e}")
-        return EtatCommande.ANNULEE
+        with next(get_session()) as db:
+            changer_etat_commande(db, saga_id, EtatCommande.ANNULEE)
+        return {
+            "saga_id": str(saga_id),
+            "etat_final": EtatCommande.ANNULEE.value,
+            "erreur": str(e),
+        }

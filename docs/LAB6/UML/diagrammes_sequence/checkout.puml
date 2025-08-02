@@ -1,32 +1,33 @@
 @startuml
-title Diagramme de séquence – Checkout / Validation de commande (POST /api/checkout)
+title Diagramme de séquence – Saga orchestrée : checkout réussi
 
-actor Utilisateur
-participant "KrakenD Gateway" as KrakenD
-participant "FastAPI\n(checkout.py)" as API
-participant "Service\n(checkout_service.py)" as CheckoutService
-participant "Service\n(panier_service.py)" as PanierService
-participant "Service\n(stock_service.py)" as StockService
-participant "DB\nPostgreSQL" as DB
+actor Client
+participant "orchestrateur-service\n(commande_orchestration.py)" as Orchestrateur
+participant "panier-service" as Panier
+participant "stock-service" as Stock
+participant "client-service" as ClientS
+participant "ventes-service" as Ventes
+database "PostgreSQL\norchestrateur-db" as DB
 
-Utilisateur -> KrakenD : POST /api/checkout
-KrakenD -> API : POST /api/checkout
-API -> CheckoutService : valider_commande()
+Client -> Orchestrateur : POST /api/commande/checkout
+activate Orchestrateur
 
-CheckoutService -> PanierService : récupérer_panier()
-PanierService -> DB : SELECT * FROM panier WHERE user_id
-DB --> PanierService : Liste[Article]
-PanierService --> CheckoutService : Panier
+Orchestrateur -> DB : Créer Commande + état INITIÉE
+Orchestrateur -> Panier : GET /paniers/client/{id}
+Panier --> Orchestrateur : [produits]
 
-CheckoutService -> StockService : verifier_disponibilite(Panier)
-StockService -> DB : SELECT * FROM stock WHERE produit_id
-DB --> StockService : Stocks OK
-StockService --> CheckoutService : OK
+Orchestrateur -> Stock : POST /stock/reserver
+Stock --> Orchestrateur : 200 OK
+Orchestrateur -> DB : Log état STOCK_RÉSERVÉ
 
-CheckoutService -> DB : INSERT INTO ventes, vider panier, maj stock
-DB --> CheckoutService : Success
+Orchestrateur -> ClientS : POST /clients/{id}/payer
+ClientS --> Orchestrateur : 200 OK
+Orchestrateur -> DB : Log état PAIEMENT_EFFECTUÉ
 
-CheckoutService --> API : Commande validée
-API --> KrakenD : 200 OK + Confirmation
-KrakenD --> Utilisateur : 200 OK + Confirmation
+Orchestrateur -> Ventes : POST /ventes
+Ventes --> Orchestrateur : 201 Created
+Orchestrateur -> DB : Log état CONFIRMÉE
+
+Orchestrateur --> Client : {saga_id, état_final: CONFIRMÉE}
+deactivate Orchestrateur
 @enduml

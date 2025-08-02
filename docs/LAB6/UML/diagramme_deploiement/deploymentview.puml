@@ -1,8 +1,8 @@
 @startuml
-title Diagramme de déploiement - Microservices LOG430
+title Diagramme de déploiement – Architecture Microservices LOG430
 
 node "Docker Host" {
-  
+
   node "Frontend (React)" {
     component "log430-frontend\n:3000"
   }
@@ -15,13 +15,19 @@ node "Docker Host" {
     component "nginx-loadbalancer\n:8081"
   }
 
-  node "Monolithe API (FastAPI)" {
+  node "Monolithe API (déprécié)" {
     component "log430-app\n:8000"
+    database "PostgreSQL monolith-db\n:5432"
   }
 
+  database "PostgreSQL produits-db\n:5433"
   node "produits-service" {
     component "FastAPI\n:8000"
-    database "PostgreSQL produits-db\n:5433"
+  }
+
+  database "PostgreSQL magasin-db\n:5436"
+  node "magasin-service" {
+    component "FastAPI\n:8000"
   }
 
   node "stock-service-1" {
@@ -32,32 +38,40 @@ node "Docker Host" {
     component "FastAPI\n:8000"
   }
 
-  database "PostgreSQL magasin-db\n:5436"
-  node "magasin-service" {
-    component "FastAPI\n:8000"
-  }
-
+  database "PostgreSQL ventes-db\n:5435"
   node "ventes-service" {
     component "FastAPI\n:8000"
-    database "PostgreSQL ventes-db\n:5435"
   }
 
+  database "PostgreSQL client-db\n:5437"
   node "client-service" {
     component "FastAPI\n:8000"
-    database "PostgreSQL client-db\n:5437"
   }
 
+  database "PostgreSQL panier-db\n:5438"
   node "panier-service" {
     component "FastAPI\n:8000"
-    database "PostgreSQL panier-db\n:5438"
   }
 
+  database "PostgreSQL checkout-db\n:5439"
   node "checkout-service" {
     component "FastAPI\n:8000"
-    database "PostgreSQL checkout-db\n:5439"
   }
 
-  database "PostgreSQL monolith-db\n:5432"
+  database "PostgreSQL orchestrateur-db\n:5440"
+  node "orchestrateur-service" {
+    component "FastAPI\n:8000"
+  }
+
+  node "CI/CD (GitHub Actions)" {
+    artifact "Pipeline build/test/deploy"
+  }
+
+  node "Monitoring" {
+    component "Prometheus\n:9090"
+    component "Grafana\n:3000"
+  }
+
 }
 
 @enduml

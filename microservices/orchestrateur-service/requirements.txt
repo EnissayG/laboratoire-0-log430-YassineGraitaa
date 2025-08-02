@@ -3,3 +3,5 @@ httpx
 uvicorn
 pydantic
 prometheus_fastapi_instrumentator
+sqlalchemy
+psycopg2-binary

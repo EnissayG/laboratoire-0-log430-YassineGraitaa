@@ -17,3 +17,8 @@ class CommandeOut(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class CommandeInput(BaseModel):
+    client_id: int
+    magasin_id: int

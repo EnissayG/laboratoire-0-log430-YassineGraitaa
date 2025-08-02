@@ -108,7 +108,7 @@ def supprimer_vente(vente_id: int, session: Session = Depends(get_session)):
 
 
 @router.post("", status_code=201)
-def creer_vente(vente: VenteInput, db: Session = Depends(get_db)):
+def creer_vente(vente: VenteInput, db: Session = Depends(get_session)):
     resultat = enregistrer_vente(
         produits_selectionnes=[p.dict() for p in vente.produits],
         magasin_id=vente.magasin_id,
