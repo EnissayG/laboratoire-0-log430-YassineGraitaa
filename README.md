@@ -1,4 +1,4 @@
-# LOG430 – Laboratoire 1 à 6 : Système de caisse distribué observé 🧾🔁📊
+# LOG430 – Laboratoire 1 à 7 : Système de caisse distribué observé 🧾🔁📊
 
 ## 🧩 Description du projet
 
@@ -58,6 +58,15 @@ Ce projet suit l'évolution progressive d'un système de caisse initialement loc
 - 📊 Métriques Prometheus : états de commande
 - 🧪 Tests Postman avec scénarios d’échec simulés
 
+### Lab 7 – Architecture Événementielle complète
+- 🔁 Communication Pub/Sub via **Redis Streams**
+- 📚 Stockage durable des événements via **Event Store** PostgreSQL
+- 🔄 Relecture des événements et **projection à la volée**
+- ⚡ Mise en œuvre du **pattern CQRS** : séparation lecture/écriture
+- 🎯 Coordination **Saga chorégraphiée**
+- 📊 Observabilité des événements : Prometheus + Dashboards Grafana
+- 🧪 Tests de scénarios complets (succès, échecs, résilience)
+
 ---
 
 ## 🗂️ Structure du projet
@@ -72,6 +81,7 @@ Ce projet suit l'évolution progressive d'un système de caisse initialement loc
 │   ├── panier-service/
 │   ├── checkout-service/
 │   ├── orchestrateur-service/
+│   ├── event-store/
 │   └── krakend/
 ├── frontend/dashboard/
 ├── nginx/
@@ -125,6 +135,13 @@ docker-compose -f docker-compose.observ.yml up --build
 
 Chaque test déclenche un scénario complet avec journalisation et rollback.
 
+### Tests événementiels pour la saga chorégraphiée (Lab 7)
+
+1. Publier une `CommandeCreee` vers Redis Stream via `panier-service`
+2. Observer le flux d’événements successifs (`StockReserve`, `PaiementAccepte`, etc.)
+3. Vérifier les logs de compensation (si `PaiementRefuse`, `StockIndisponible`)
+4. Accéder à `/events/projections/cmd-XXXX` pour voir l’état reconstruit
+
 ---
 
 ## 🧠 Recommandations finales
@@ -144,4 +161,4 @@ Chaque test déclenche un scénario complet avec journalisation et rollback.
 
 Projet académique – ÉTS 2025  
 Développé par **Yassine Graitaa** – LOG430  
-📅 Dernière mise à jour : **2025-08-01**
+📅 Dernière mise à jour : **2025-08-02**
