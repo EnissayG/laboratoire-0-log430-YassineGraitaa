@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.produit import Produit
+from app.db.database import get_session
+from sqlalchemy.orm import Session
 from .publisher import publier_evenement_stock
 import httpx
 import os
@@ -94,3 +96,25 @@ async def reserver_produits(commande: dict, db: Session):
 
     print(f"[stock-service] Stock réservé et événement publié.")
     return True
+
+
+async def liberer_produits(commande: dict, db: Session = None):
+    if db is None:
+        db = next(get_session())
+    produits_commande = commande["commande"]["produits"]
+
+    for produit in produits_commande:
+        produit_id = produit["produit_id"]
+        quantite = produit["quantite"]
+
+        produit_stock = db.query(Produit).filter(Produit.id == produit_id).first()
+
+        if produit_stock:
+            produit_stock.quantite_stock += quantite  # remettre la quantité
+        else:
+            print(
+                f"[stock-service] Produit {produit_id} introuvable, impossible de libérer"
+            )
+
+    db.commit()
+    print(f"[stock-service] Stock libéré pour commande refusée")

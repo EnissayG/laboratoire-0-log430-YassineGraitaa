@@ -33,3 +33,31 @@ async def consommer_commandes():
                     await redis_client.xack(stream_name, group_name, message_id)
                 except Exception as e:
                     print(f"[Erreur traitement] {e}")
+
+
+async def consommer_paiement_refuse():
+    stream_name = "paiement.evenements"
+    group_name = "stock-rollback-group"
+    consumer_name = "stock-service-2"
+
+    try:
+        await redis_client.xgroup_create(stream_name, group_name, id="0", mkstream=True)
+    except redis.ResponseError as e:
+        if "BUSYGROUP" not in str(e):
+            raise e
+
+    print(f"[stock-service] En écoute sur {stream_name} pour rollback...")
+
+    while True:
+        events = await redis_client.xreadgroup(
+            group_name, consumer_name, streams={stream_name: ">"}, count=10, block=5000
+        )
+        for stream, messages in events:
+            for message_id, data in messages:
+                try:
+                    if data["event_type"] == "PaiementRefuse":
+                        commande = json.loads(data["data"])
+                        await liberer_produits(commande)
+                    await redis_client.xack(stream_name, group_name, message_id)
+                except Exception as e:
+                    print(f"[stock-service] Erreur rollback : {e}")

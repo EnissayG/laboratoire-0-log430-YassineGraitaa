@@ -8,6 +8,8 @@ from app.models.produit import Produit
 from app.models.vente import Vente
 from app.models.lignevente import LigneVente
 from app.models.magasin import Magasin
+from app.db.database import get_session
+
 
 # Cache local (valide tant que l'app tourne)
 _cached_rapport = None
@@ -203,3 +205,30 @@ def annuler_vente(vente_id: int, session: Session) -> bool:
         session.rollback()
         print("❌ Erreur lors de l’annulation :", e)
         return False
+
+
+async def enregistrer_vente(commande: dict):
+    db: Session = next(get_session())  # dépendance manuelle
+
+    produits = commande.get("produits", [])
+    total = commande.get("total", 0)
+    client_id = commande.get("client_id")  # peut être ignoré ici
+    magasin_id = commande.get(
+        "magasin_id", 1
+    )  # ⚠️ ou généré aléatoirement / valeur par défaut
+
+    vente = Vente(total=total, magasin_id=magasin_id)
+
+    for p in produits:
+        ligne = LigneVente(
+            produit_id=p["produit_id"],
+            quantite=p["quantite"],
+            sous_total=p["sous_total"],
+        )
+        vente.lignes.append(ligne)
+
+    db.add(vente)
+    db.commit()
+    db.refresh(vente)
+
+    print(f"[ventes-service] Vente enregistrée : ID {vente.id}, total = {total} $")
