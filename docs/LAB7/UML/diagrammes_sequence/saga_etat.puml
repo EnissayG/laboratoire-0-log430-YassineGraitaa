@@ -1,0 +1,24 @@
+@startuml
+title Machine d'état – Commande orchestrée (Saga)
+
+[*] --> INITIEE : Début saga
+
+INITIEE --> STOCK_RESERVE : ✅ Panier valide + stock disponible
+STOCK_RESERVE --> PAIEMENT_EFFECTUE : ✅ Paiement accepté
+PAIEMENT_EFFECTUE --> COMMANDE_ENREGISTREE : ✅ Vente enregistrée
+COMMANDE_ENREGISTREE --> CONFIRMEE : ✅ Succès global
+
+' 💥 Transitions d’échec avec rollback
+INITIEE --> ECHEC_STOCK : ❌ Stock insuffisant
+STOCK_RESERVE --> ECHEC_PAIEMENT : ❌ Paiement refusé\n→ rollback stock
+PAIEMENT_EFFECTUE --> ECHEC_ENREGISTREMENT : ❌ Erreur enregistrement vente\n→ rollback stock + remboursement
+
+' 🔚 États terminaux
+ECHEC_STOCK --> ANNULEE
+ECHEC_PAIEMENT --> ANNULEE
+ECHEC_ENREGISTREMENT --> ANNULEE
+
+CONFIRMEE --> [*]
+ANNULEE --> [*]
+
+@enduml

@@ -1,0 +1,63 @@
+@startuml
+title Vue des cas d'utilisation – Système Multi-Magasins (Saga orchestrée)
+
+left to right direction
+skinparam actorStyle awesome
+
+actor Employé
+actor Client
+actor Prometheus
+
+package "Gestion Produits" {
+  usecase "Créer / Modifier\nun produit" as UC1
+  usecase "Lister les produits" as UC2
+  usecase "Rechercher produit" as UC3
+}
+
+package "Gestion Magasins" {
+  usecase "Créer un magasin" as UC4
+  usecase "Lister les magasins" as UC5
+}
+
+package "Gestion Stock" {
+  usecase "Mettre à jour le stock" as UC6
+  usecase "Consulter le stock" as UC7
+  usecase "Générer rapports" as UC8
+  usecase "Réserver / Libérer\nle stock" as UC17
+}
+
+package "Vente et Client" {
+  usecase "Créer un client" as UC9
+  usecase "Accéder à son panier" as UC10
+  usecase "Ajouter/Supprimer au panier" as UC11
+}
+
+package "Orchestration de Commande (Saga)" {
+  usecase "Valider la commande\n(Saga orchestrée)" as UC12
+  usecase "Consulter état commande" as UC13
+  usecase "Rollback en cas d’échec" as UC14
+  usecase "Exposer métriques Prometheus" as UC15
+}
+
+Employé --> UC1
+Employé --> UC2
+Employé --> UC3
+Employé --> UC4
+Employé --> UC5
+Employé --> UC6
+Employé --> UC7
+Employé --> UC8
+Employé --> UC13
+
+Client --> UC9
+Client --> UC10
+Client --> UC11
+Client --> UC12
+
+UC12 --> UC17 : inclut
+UC12 --> UC14 : en cas d’échec
+UC12 --> UC13 : met à jour l’état
+
+Prometheus --> UC15
+
+@enduml

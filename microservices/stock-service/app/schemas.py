@@ -19,5 +19,12 @@ class ProduitQuantite(BaseModel):
     prix: float
 
 
+class ProduitOut(BaseModel):
+    id: int
+    nom: str
+
+    model_config = {"from_attributes": True}
+
+
 class ReservationProduits(BaseModel):
     produits: list[ProduitQuantite]

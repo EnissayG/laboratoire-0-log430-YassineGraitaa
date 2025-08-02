@@ -1,0 +1,31 @@
+@startuml
+title Diagramme de composants – Microservice FastAPI (vue implémentation)
+
+package "microservice-x" {
+
+  [main.py] --> [router : routers/xxx.py]
+
+  package "routers" {
+    [xxx.py] --> [service : services/xxx_service.py]
+    [xxx.py] --> [schemas : schemas.py]
+    [xxx.py] --> [dependencies : db/database.py]
+  }
+
+  package "services" {
+    [xxx_service.py] --> [model : models/xxx.py]
+    [xxx_service.py] --> [db : db/database.py]
+    [xxx_service.py] --> [schemas.py]
+    [xxx_service.py] --> [httpx / Prometheus]
+  }
+
+  package "models" {
+    [xxx.py] --> [Base SQLAlchemy]
+  }
+
+  [schemas.py] --> [pydantic.BaseModel]
+  [db/database.py] --> [PostgreSQL]
+
+  [main.py] ..> [Prometheus Instrumentator]
+}
+
+@enduml

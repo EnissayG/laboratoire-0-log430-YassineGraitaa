@@ -1,0 +1,95 @@
+{
+  "info": {
+    "name": "Saga Checkout Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "ECHEC STOCK",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"client_id\": 1, \"magasin_id\": 1 }"
+        },
+        "url": {
+          "raw": "http://localhost:8023/api/commande/checkout",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8023",
+          "path": [
+            "api",
+            "commande",
+            "checkout"
+          ]
+        }
+      }
+    },
+    {
+      "name": "ECHEC PAIEMENT",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"client_id\": 2, \"magasin_id\": 1 }"
+        },
+        "url": {
+          "raw": "http://localhost:8023/api/commande/checkout",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8023",
+          "path": [
+            "api",
+            "commande",
+            "checkout"
+          ]
+        }
+      }
+    },
+    {
+      "name": "ECHEC ENREGISTREMENT",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"client_id\": 3, \"magasin_id\": 1 }"
+        },
+        "url": {
+          "raw": "http://localhost:8023/api/commande/checkout",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8023",
+          "path": [
+            "api",
+            "commande",
+            "checkout"
+          ]
+        }
+      }
+    }
+  ]
+}

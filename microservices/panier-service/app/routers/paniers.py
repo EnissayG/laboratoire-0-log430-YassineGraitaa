@@ -6,6 +6,7 @@ from app.services.panier_service import (
     get_panier_client,
     supprimer_article,
     vider_panier,
+    creer_commande_depuis_panier,
 )
 from app.db.database import get_session
 from typing import List
@@ -32,3 +33,9 @@ def supprimer(panier_id: int, db: Session = Depends(get_session)):
 @router.delete("/client/{client_id}", status_code=204)
 def vider(client_id: int, db: Session = Depends(get_session)):
     vider_panier(client_id, db)
+
+
+@router.post("/commande/depuis-panier/{panier_id}")
+async def checkout_depuis_panier(panier_id: int, db: Session = Depends(get_session)):
+    await creer_commande_depuis_panier(panier_id, db)
+    return {"message": "Événement CommandeCreee publié avec succès"}

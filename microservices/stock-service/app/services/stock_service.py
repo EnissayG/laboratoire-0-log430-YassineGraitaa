@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.produit import Produit
+from .publisher import publier_evenement_stock
 import httpx
 import os
 
@@ -43,3 +44,53 @@ def liberer_produits(produits: list[dict], db: Session):
         if produit:
             produit.quantite_stock += item["quantite"]
     db.commit()
+
+
+async def reserver_produits(commande: dict, db: Session):
+    produits_commande = commande["produits"]
+    client_id = commande["client_id"]
+
+    for produit in produits_commande:
+        produit_id = produit["produit_id"]
+        quantite_demandee = produit["quantite"]
+
+        produit_stock = db.query(Produit).filter(Produit.id == produit_id).first()
+
+        if not produit_stock:
+            await publier_evenement_stock(
+                "StockIndisponible",
+                {
+                    "produit_id": produit_id,
+                    "raison": "Produit introuvable",
+                    "commande": commande,
+                },
+            )
+            raise Exception(f"Produit ID {produit_id} introuvable.")
+
+        if produit_stock.quantite_stock < quantite_demandee:
+            await publier_evenement_stock(
+                "StockIndisponible",
+                {
+                    "produit_id": produit_id,
+                    "stock_disponible": produit_stock.quantite_stock,
+                    "quantite_demandee": quantite_demandee,
+                    "commande": commande,
+                },
+            )
+            raise Exception(f"Stock insuffisant pour {produit_stock.nom}")
+
+        produit_stock.quantite_stock -= quantite_demandee
+
+    db.commit()
+
+    await publier_evenement_stock(
+        "StockReserve",
+        {
+            "client_id": client_id,
+            "produits": produits_commande,
+            "total": commande["total"],
+        },
+    )
+
+    print(f"[stock-service] Stock réservé et événement publié.")
+    return True
